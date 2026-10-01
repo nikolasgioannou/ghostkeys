@@ -1,13 +1,13 @@
 ---
 id: "bd31a0"
 title: Parse the grid as it streams
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - m1
 created_at: 2026-10-01T03:09:16.900Z
-updated_at: 2026-10-01T03:14:21.633Z
+updated_at: 2026-10-01T04:14:34.560Z
 blocked_by:
   - "6b98de"
 ---
@@ -23,3 +23,9 @@ Claude's output arrives as text deltas that split lines at arbitrary points. Wra
 **Docs:** design.md → Composition (how output flows from Claude into parsed bars).
 
 **Done when:** every split of the worked example yields identical items, and abort stops iteration without leaking an unfinished promise.
+
+## Outcome
+
+- `grid/stream-parser.ts`: `parseGridStream(deltas, signal?)`, an async generator over the existing line parser (no second parser). Buffers partial lines, yields each item as its line completes, flushes a trailing line at the end, and stops (closing the input iterator) when the signal aborts.
+- Tests: every two-delta split of the worked example and one-character deltas give the same items as parsing it whole; a final line without a newline; items arrive before the next delta is read; abort stops iteration and closes the input.
+- design.md → Composition describes how output flows from Claude into parsed items.

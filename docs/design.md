@@ -44,6 +44,8 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 **Claude writes every note** (invariant 1). Code validates and may suggest a draft, but never composes or silently edits notes.
 
+**From Claude to bars.** Claude's reply streams as text deltas that split lines anywhere. `parseGridStream` buffers partial lines and feeds the grid line parser one complete line at a time, yielding each item (a plan line, a bar, a footer line…) the moment its newline arrives; a final line without a newline is parsed when the stream ends, and an abort stops it at the next delta. It takes plain text, so the parser doesn't depend on the AI SDK.
+
 The grid format itself is specified in Part 3. It's drafted from the research, validated by the bake-off, and the user tweaks it at the end.
 
 Every chunk ends with a short **holding pattern**: 2–4 bars, written by Claude, that loop cleanly on the closing harmony. It's the musical safety net (see Playback).

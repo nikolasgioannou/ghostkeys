@@ -5,6 +5,7 @@ export {
   parseRoman,
 } from "./grid/line-parser.ts";
 export * from "./grid/schema.ts";
+export { parseGridStream } from "./grid/stream-parser.ts";
 export {
   isOnPiano,
   midiToPitch,
