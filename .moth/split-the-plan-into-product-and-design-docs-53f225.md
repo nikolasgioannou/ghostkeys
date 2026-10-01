@@ -1,13 +1,13 @@
 ---
 id: "53f225"
 title: Split the plan into product and design docs
-status: todo
+status: done
 priority: none
 labels:
   - docs
   - m0
 created_at: 2026-10-01T03:07:21.176Z
-updated_at: 2026-10-01T03:28:39.640Z
+updated_at: 2026-10-01T03:57:04.871Z
 ---
 
 `PLAN.md` holds everything agreed while planning. Move it into the documents the rest of the tickets point at, then delete it. No new decisions: this is a reorganisation, plus the corrections listed below.
@@ -36,3 +36,10 @@ updated_at: 2026-10-01T03:28:39.640Z
 **Docs:** this ticket is the docs.
 
 **Done when:** every PLAN.md section has a destination (check against `git show HEAD:PLAN.md`), PLAN.md is deleted, and nothing was decided that PLAN.md didn't already say.
+
+## Outcome
+
+- `docs/product.md`: tagline, vision ("press Play once…"), the user model, the product decisions table, out of scope, prior art (including the Aria name collision).
+- `docs/design.md`: Part 1 (The piece, Composition, Steering, Playback, Memory, Bake-off, Open questions), Part 2 (Stack, Repo, tooling & gate, Claude access, Transport, Testing), Part 3 (the sketch note and the six invariants), Decision log and Risks.
+- Corrections: provider pin is `only`; conventions stated without outside attribution; the playability, steering-boundary and per-chunk-snapshot decisions made while filing the tickets are reflected in Part 1 and the Decision log.
+- `PLAN.md` deleted; `docs/plan.md` links product.md, design.md and research/.

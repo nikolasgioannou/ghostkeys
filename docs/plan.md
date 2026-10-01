@@ -2,7 +2,8 @@
 
 This is the order in which Ghostkeys gets built. The tickets themselves live in `.moth/` (Moth tracks status and `blocked_by`, but not sequence). This document is the sequence.
 
-- **Plan of record:** [`PLAN.md`](../PLAN.md) until ticket 1 splits it into `docs/product.md` and `docs/design.md` (Part 3 lists the invariants)
+- **Product:** [product.md](product.md)
+- **Design & specifications:** [design.md](design.md) (Part 3 lists the invariants)
 - **Research:** [research/](research/)
 
 ## How to work through it
