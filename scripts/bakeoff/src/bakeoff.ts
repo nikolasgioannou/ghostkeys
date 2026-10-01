@@ -2,7 +2,7 @@
  * The bake-off runner (docs/design.md → Bake-off). Composes sessions with a
  * variant and writes one run file per session to scripts/bakeoff/runs/.
  *
- *   bun run bakeoff [--variant B|C] [--sessions 2] [--chunks 4] [--bars 16] [--effort low] [--mock]
+ *   bun run bakeoff [--variant A|B|C] [--sessions 2] [--chunks 4] [--bars 16] [--effort low] [--mock]
  *
  * --mock uses a stand-in model, so nothing is spent.
  */
@@ -38,21 +38,32 @@ const chunks = Number(values.chunks);
 const bars = Number(values.bars);
 
 if (variant === "A") {
-  console.error("Variant A (ABC) isn't built yet.");
-  process.exit(1);
+  const { runAbcSession } = await import("./abc.ts");
+  await runAll((session, model) =>
+    runAbcSession({
+      session,
+      model,
+      chunks,
+      barsPerChunk: bars,
+      effort,
+      mock: values.mock,
+      onChunk: report,
+    }),
+  );
+} else {
+  await runAll((session, model) =>
+    runSession({
+      variant,
+      session,
+      model,
+      chunks,
+      barsPerChunk: bars,
+      effort,
+      mock: values.mock,
+      onChunk: report,
+    }),
+  );
 }
-await runAll((session, model) =>
-  runSession({
-    variant,
-    session,
-    model,
-    chunks,
-    barsPerChunk: bars,
-    effort,
-    mock: values.mock,
-    onChunk: report,
-  }),
-);
 
 function report(record: RunFile["chunks"][number]): void {
   const rtf =
@@ -79,7 +90,7 @@ async function runAll(
       `Variant ${variant} (${VARIANT_NAMES[variant]}), session ${String(session)}: ${String(chunks)} × ${String(bars)} bars, effort ${effort}${values.mock ? ", mock" : ""}`,
     );
     const model = values.mock
-      ? mockModel(bars)
+      ? mockModel(bars, variant === "A" ? "abc" : "grid")
       : createClaude({
           apiKey: apiKey ?? "",
           sessionId: `bakeoff-${variant}-${String(session)}-${String(Date.now())}`,

@@ -28,7 +28,22 @@ export interface SessionOptions {
   effort: Effort;
   mock: boolean;
   /** Called after each chunk, for progress output. */
-  onChunk?: (record: ChunkRecord) => void;
+  onChunk?: ((record: ChunkRecord) => void) | undefined;
+  /** Variant A composes in ABC; B and C use the engine's composer. */
+  compose?: (options: {
+    model: LanguageModel;
+    context: ComposerContext;
+    bars: number;
+    effort: Effort;
+  }) => AsyncGenerator<ComposerEvent>;
+  /** Variant A reports how many bars converted cleanly. */
+  validBars?: (events: ComposerEvent[]) => number | null;
+  /** Variant A carries its own ABC forward; B and C use the engine's `nextContext`. */
+  nextContext?: (
+    context: ComposerContext,
+    items: GridItem[],
+    text: string,
+  ) => ComposerContext;
   now?: () => number;
 }
 
@@ -68,14 +83,21 @@ export async function runSession(options: SessionOptions): Promise<RunFile> {
       attempt++
     ) {
       const events: ComposerEvent[] = [];
-      const stream = composeChunk({
-        model: options.model,
-        context,
-        bars: options.barsPerChunk,
-        effort: options.effort,
-        revise: options.variant === "C",
-        ...(options.now ? { now: options.now } : {}),
-      });
+      const stream = options.compose
+        ? options.compose({
+            model: options.model,
+            context,
+            bars: options.barsPerChunk,
+            effort: options.effort,
+          })
+        : composeChunk({
+            model: options.model,
+            context,
+            bars: options.barsPerChunk,
+            effort: options.effort,
+            revise: options.variant === "C",
+            ...(options.now ? { now: options.now } : {}),
+          });
       for await (const event of stream) events.push(event);
       const last = events.at(-1);
       const firstItems = events.flatMap((event) =>
@@ -104,7 +126,7 @@ export async function runSession(options: SessionOptions): Promise<RunFile> {
           musicSec,
           realTimeFactor:
             musicSec > 0 ? last.timings.totalMs / 1000 / musicSec : null,
-          validBars: null,
+          validBars: options.validBars?.(events) ?? null,
         };
       } else {
         record = {
@@ -131,7 +153,7 @@ export async function runSession(options: SessionOptions): Promise<RunFile> {
                 },
           musicSec: 0,
           realTimeFactor: null,
-          validBars: null,
+          validBars: options.validBars?.(events) ?? null,
         };
       }
     }
@@ -140,7 +162,9 @@ export async function runSession(options: SessionOptions): Promise<RunFile> {
     run.chunks.push(record);
     options.onChunk?.(record);
     if (record.outcome !== "complete") break;
-    context = nextContext(context, { items: record.items });
+    context = options.nextContext
+      ? options.nextContext(context, record.items, record.texts[0] ?? "")
+      : nextContext(context, { items: record.items });
   }
   return run;
 }

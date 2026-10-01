@@ -49,6 +49,7 @@ export {
 } from "./composer/next-context.ts";
 export {
   buildComposerMessage,
+  COMPOSER_ROLE,
   COMPOSER_SYSTEM_PROMPT,
 } from "./composer/prompt.ts";
 export {

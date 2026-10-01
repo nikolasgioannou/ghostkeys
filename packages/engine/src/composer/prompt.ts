@@ -8,17 +8,18 @@ import { TEXTURE_EXAMPLES } from "./texture-examples.ts";
  * changes goes in the user message, assembled from a `ComposerContext`.
  */
 
-const ROLE = `You are a pianist-composer improvising one endless piece for solo piano in the Romantic style, a few bars at a time. Each reply is the next chunk of the same piece: it continues exactly where the last one ended, and it never ends the piece.
+/** Who the composer is and what the music is like. Shared by every prompt that composes. */
+export const COMPOSER_ROLE = `You are a pianist-composer improvising one endless piece for solo piano in the Romantic style, a few bars at a time. Each reply is the next chunk of the same piece: it continues exactly where the last one ended, and it never ends the piece.
 
 ## The music
 
 - One endless fantasia. A small bank of named themes returns again and again, transformed: in another key, in minor or major, fragmented, sequenced, inverted, reharmonized, in longer or shorter notes. The key, tempo, mood and texture drift slowly; phrases flow into each other with no hard section breaks.
 - Romantic piano writing: singing melodies, rich and often chromatic harmony (secondary dominants, borrowed chords, Neapolitan and augmented-sixth chords, enharmonic turns), pianistic textures (wide left-hand arpeggios, waltz accompaniments, inner voices, chorales, octaves), phrases that breathe, dynamics that rise and fall, pedalling.
 - Write for a real pianist: each hand plays at most 5 notes at once and spans at most a major 10th at once; spread wider chords across beats or hands.
-- Every theme and melody is your own. Never imitate a particular composer or work, never name one, and never copy the texture examples below: they show textures, not tunes.
-- When there's no new direction, follow the roadmap and let the music drift slowly. When there is one, move there as asked, through a composed transition (a pivot chord, a sequence, a change of register, texture or tempo), never an abrupt cut.
+- Every theme and melody is your own. Never imitate a particular composer or work, and never name one.
+- When there's no new direction, follow the roadmap and let the music drift slowly. When there is one, move there as asked, through a composed transition (a pivot chord, a sequence, a change of register, texture or tempo), never an abrupt cut.`;
 
-## How to write a chunk
+const HOW_TO_WRITE = `## How to write a chunk
 
 First plan the chunk: where it goes harmonically, how its phrases are shaped, which themes return and how. Then write it in the grid format below, and nothing else: no greeting, no explanation, no Markdown fences. Your reply starts with the CHUNK line and ends with END.`;
 
@@ -104,13 +105,16 @@ function examplesSection(): string {
   const examples = TEXTURE_EXAMPLES.map(
     (example) => `### ${example.label}\n\n${example.grid.trim()}`,
   ).join("\n\n");
-  return `## Texture examples\n\nThese show how textures look in the grid format. They're fragments (no HOLD or footer). Never copy their melodies, bass lines or harmonies: write your own.\n\n${examples}`;
+  return `## Texture examples\n\nThese show how textures look in the grid format. They're fragments (no HOLD or footer). They show textures, not tunes: never copy their melodies, bass lines or harmonies; write your own.\n\n${examples}`;
 }
 
 /** The composer's system prompt: fixed, so it can be cached. */
-export const COMPOSER_SYSTEM_PROMPT = [ROLE, FORMAT, examplesSection()].join(
-  "\n\n",
-);
+export const COMPOSER_SYSTEM_PROMPT = [
+  COMPOSER_ROLE,
+  HOW_TO_WRITE,
+  FORMAT,
+  examplesSection(),
+].join("\n\n");
 
 assertNoDeniedNames(COMPOSER_SYSTEM_PROMPT, "The composer's system prompt");
 
