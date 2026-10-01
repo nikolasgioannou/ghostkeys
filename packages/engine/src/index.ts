@@ -1,4 +1,9 @@
 export {
+  checkCopies,
+  COPY_MIN_DISTINCT_INTERVALS,
+  COPY_MIN_STEPS,
+} from "./checks/copy-check.ts";
+export {
   beatLength,
   checkHarmony,
   chordPitchClasses,

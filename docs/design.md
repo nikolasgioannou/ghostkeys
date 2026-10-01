@@ -56,6 +56,8 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 Claude sees only each example's texture label and grid. The citation (composer, work, bars, source URL, licence) stays in the engine's data and never reaches a prompt (invariant 3). Every example parses, breaks no playing rule and has no hard harmony violation; the tests hold them to that. The planning research suggested a chorale and a syncopated inner voice too, but the Mutopia editions of those textures that are marked public domain didn't transcribe cleanly from MIDI, so the set is three for now.
 
+**Copy check** (`checkCopies`, invariant 3). Every chunk's melody (the highest right-hand note at each onset) and bass line (the lowest left-hand note on each beat; figuration between beats isn't part of the line) are reduced to steps of interval plus time-to-next-note, so transposing doesn't hide a copy. The longest run of steps shared with any example's same voice is a **hard** violation at `COPY_MIN_STEPS` (6 steps, 7 notes, for the melody; 10 for the bass, since bass lines in the same progression and texture are naturally alike) when the run uses at least `COPY_MIN_DISTINCT_INTERVALS` (3) different intervals, so a repeated pedal note or a plain arpeggio isn't a tune. The theme bank is never compared: themes returning is intended. The bake-off tunes the constants.
+
 **From Claude to bars.** Claude's reply streams as text deltas that split lines anywhere. `parseGridStream` buffers partial lines and feeds the grid line parser one complete line at a time, yielding each item (a plan line, a bar, a footer line…) the moment its newline arrives; a final line without a newline is parsed when the stream ends, and an abort stops it at the next delta. It takes plain text, so the parser doesn't depend on the AI SDK.
 
 The grid format itself is specified in Part 3. It's drafted from the research, validated by the bake-off, and the user tweaks it at the end.
@@ -195,7 +197,7 @@ These are load-bearing. Changing one means revisiting the design with the user, 
 
 1. **Claude chooses every note.** Code validates and may suggest drafts, but never composes or silently edits notes. Any deterministic repair is flagged and logged.
 2. **No generation without a connected listener.**
-3. **Original themes only.** No composer-imitation prompts; example excerpts are always behind a copy check.
+3. **Original themes only.** No composer-imitation prompts; example excerpts are always behind a copy check. Enforced by `checkCopies` on every chunk; example citations never reach a prompt.
 4. **The music never stops.** Playback never stalls; if generation falls behind, the fallback is musical, not silence.
 5. **One schema source.** Every cross-boundary shape is a Zod schema in the engine; no hand-written duplicate types.
 6. **The engine is framework-free.** `packages/engine` never imports React, TanStack or the database. Enforced by lint: the engine can't import UI, framework or database packages, read `process.env`, or use browser globals.
