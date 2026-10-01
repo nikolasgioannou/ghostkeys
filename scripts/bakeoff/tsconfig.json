@@ -1,0 +1,8 @@
+{
+  // Runs on Bun, outside the engine.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

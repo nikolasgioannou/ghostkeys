@@ -16,14 +16,15 @@ The script trusts `mise.toml`, installs the tools and dependencies, installs the
 
 ## Scripts
 
-| Command             | What it does                                                                   |
-| ------------------- | ------------------------------------------------------------------------------ |
-| `bun run check`     | Everything the pre-commit hook runs: Moth, formatting, lint, typecheck, tests. |
-| `bun run test`      | Runs the tests once (`test:watch` to watch).                                   |
-| `bun run lint`      | Lints with ESLint (`lint:fix` to fix what it can).                             |
-| `bun run format`    | Formats with Prettier (`format:check` to check only).                          |
-| `bun run typecheck` | Typechecks every workspace.                                                    |
-| `bun run smoke`     | Makes a few real calls to Claude through OpenRouter (costs a few cents).       |
+| Command             | What it does                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| `bun run check`     | Everything the pre-commit hook runs: Moth, formatting, lint, typecheck, tests.            |
+| `bun run test`      | Runs the tests once (`test:watch` to watch).                                              |
+| `bun run lint`      | Lints with ESLint (`lint:fix` to fix what it can).                                        |
+| `bun run format`    | Formats with Prettier (`format:check` to check only).                                     |
+| `bun run typecheck` | Typechecks every workspace.                                                               |
+| `bun run smoke`     | Makes a few real calls to Claude through OpenRouter (costs a few cents).                  |
+| `bun run bakeoff`   | Runs the composition bake-off (`--mock` to spend nothing; see docs/design.md → Bake-off). |
 
 ## Docs
 

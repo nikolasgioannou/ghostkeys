@@ -1,13 +1,13 @@
 ---
 id: "a7ea88"
 title: Build the bake-off runner
-status: todo
+status: done
 priority: none
 labels:
   - bakeoff
   - m2
 created_at: 2026-10-01T03:10:49.054Z
-updated_at: 2026-10-01T03:29:53.446Z
+updated_at: 2026-10-01T04:59:10.315Z
 blocked_by:
   - "20a6d2"
   - "3faa43"
@@ -28,3 +28,13 @@ Generate the material the user will judge by ear and the numbers that back it up
 **Docs:** design.md → Repo, tooling & gate (the workspace); design.md → Bake-off (how to run it, what's measured).
 
 **Done when:** `--mock` produces complete run files offline that validate against the schema, and the gate covers the workspace.
+
+## Outcome
+
+- `scripts/bakeoff` workspace (`@ghostkeys/bakeoff`, typechecked, linted and tested by the gate; Vitest's projects now include `scripts/*` minus plain files). Root `bun run bakeoff …` (args pass through).
+- `run-file.ts`: `RunFileSchema` / `ChunkRecordSchema`, built from the engine's event, item, violation, usage and timing schemas; variants A/B/C named.
+- `runner.ts`: `runSession` — chunks with `nextContext` continuity, the scripted steering note from chunk 3, variant B = `revise: false`, C = revise on, one retry for a failed chunk, violations before (re-checked from the first reply's items) and after, music duration from `timeChunk`, the real-time factor (generation incl. revise ÷ music).
+- `mock.ts`: a stand-in model writing varied, valid chunks (melody on chord tones over a nocturne bass) and an empty correction for revise turns.
+- `bakeoff.ts`: the CLI (`--variant`, `--sessions`, `--chunks`, `--bars`, `--effort`, `--mock`), progress lines per chunk, one run file per session in the gitignored `runs/`. Variant A is refused until its ticket.
+- Verified: mock sessions for B and C (4 × 16 bars) complete with no violations and valid run files; tests cover both variants and the steering schedule.
+- design.md → Bake-off (how to run it, the run files) and Repo (the workspace); README lists the script.
