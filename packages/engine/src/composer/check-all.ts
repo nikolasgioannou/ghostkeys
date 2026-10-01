@@ -3,6 +3,7 @@ import { checkHarmony } from "../checks/harmony.ts";
 import { checkBar, checkChunk } from "../checks/playing-rules.ts";
 import type { Violation } from "../checks/violation.ts";
 import type { GridItem } from "../grid/schema.ts";
+import { spellingFor } from "../pitch.ts";
 import { findDeniedNames } from "./denylist.ts";
 
 type BarItem = Extract<GridItem, { type: "bar" }>;
@@ -33,7 +34,11 @@ export function checkArrivingBar(
     (violation) =>
       !earlierCopies.some((earlier) => sameViolation(earlier, violation)),
   );
-  return [...checkBar(bar.body, header.meter, where), ...harmony, ...copies];
+  return [
+    ...checkBar(bar.body, header.meter, where, spellingFor(header.key)),
+    ...harmony,
+    ...copies,
+  ];
 }
 
 /**

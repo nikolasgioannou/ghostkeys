@@ -1,5 +1,5 @@
 import type { GridItem, Key, Meter, Note, Roman } from "../grid/schema.ts";
-import { midiToPitch } from "../pitch.ts";
+import { midiToPitch, spellingFor } from "../pitch.ts";
 import type { Violation } from "./violation.ts";
 
 /**
@@ -158,7 +158,10 @@ export function checkHarmony(items: GridItem[]): Violation[] {
 
     const severity = share > HARMONY_HARD_THRESHOLD ? "hard" : "soft";
     const names = outside
-      .map((note) => midiToPitch(note.midi) ?? String(note.midi))
+      .map(
+        (note) =>
+          midiToPitch(note.midi, spellingFor(plan.key)) ?? String(note.midi),
+      )
       .join(", ");
     violations.push({
       rule: "harmony",

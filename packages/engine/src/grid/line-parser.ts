@@ -28,8 +28,19 @@ type Section = "start" | "plan" | "bars" | "hold" | "footer" | "done";
 
 class ParseError extends Error {}
 
-export function createGridLineParser(): GridLineParser {
-  let section: Section = "start";
+export interface GridLineParserOptions {
+  /**
+   * Parse a revise reply (docs/design.md → Grid format → Revise reply): no
+   * CHUNK header, and corrected plan and bar lines may come in any order.
+   */
+  revision?: boolean;
+}
+
+export function createGridLineParser(
+  options: GridLineParserOptions = {},
+): GridLineParser {
+  const revision = options.revision ?? false;
+  let section: Section = revision ? "plan" : "start";
   let lineNumber = 0;
 
   return {
@@ -63,7 +74,7 @@ export function createGridLineParser(): GridLineParser {
 
         const plan = /^P(\d+)$/.exec(head);
         if (plan) {
-          if (section !== "plan")
+          if (section !== "plan" && !(revision && section === "bars"))
             return error("plan line after the bars started");
           return {
             type: "plan",
@@ -86,9 +97,13 @@ export function createGridLineParser(): GridLineParser {
           };
         }
 
+        // A revise reply may skip the bars and go straight to the holding
+        // pattern, the footer or END.
+        const afterBars =
+          section === "bars" || (revision && section === "plan");
+
         if (head === "HOLD") {
-          if (section !== "bars" || rest !== "")
-            return error("HOLD out of place");
+          if (!afterBars || rest !== "") return error("HOLD out of place");
           section = "hold";
           return { type: "hold-start", ...at };
         }
@@ -106,11 +121,7 @@ export function createGridLineParser(): GridLineParser {
         }
 
         if (head === "F") {
-          if (
-            section !== "bars" &&
-            section !== "hold" &&
-            section !== "footer"
-          ) {
+          if (!afterBars && section !== "hold" && section !== "footer") {
             return error("footer line out of place");
           }
           section = "footer";
@@ -119,11 +130,7 @@ export function createGridLineParser(): GridLineParser {
 
         if (head === "END") {
           if (rest !== "") return error("END takes nothing after it");
-          if (
-            section !== "bars" &&
-            section !== "hold" &&
-            section !== "footer"
-          ) {
+          if (!afterBars && section !== "hold" && section !== "footer") {
             return error("END before any bars");
           }
           section = "done";

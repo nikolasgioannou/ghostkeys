@@ -10,6 +10,7 @@ import {
   midiToPitch,
   PIANO_HIGHEST_MIDI,
   PIANO_LOWEST_MIDI,
+  spellingFor,
 } from "../pitch.ts";
 import type { Violation } from "./violation.ts";
 
@@ -34,8 +35,10 @@ type Hand = "right" | "left";
 
 const HANDS: readonly Hand[] = ["right", "left"];
 
-function name(midi: number): string {
-  return midiToPitch(midi) ?? `MIDI ${String(midi)}`;
+type Spelling = "sharp" | "flat";
+
+function name(midi: number, spelling: Spelling): string {
+  return midiToPitch(midi, spelling) ?? `MIDI ${String(midi)}`;
 }
 
 function label(where: Where, hand: Hand | null): string {
@@ -73,6 +76,7 @@ export function checkBar(
   body: BarBody,
   meter: Meter,
   where: Where,
+  spelling: Spelling = "sharp",
 ): Violation[] {
   const length = barLength(meter);
   const violations: Violation[] = [];
@@ -80,7 +84,7 @@ export function checkBar(
   for (const hand of HANDS) {
     const notes = body[hand];
     for (const note of notes) {
-      const at = `${name(note.midi)} at slot ${String(note.onset)}`;
+      const at = `${name(note.midi, spelling)} at slot ${String(note.onset)}`;
       if (note.onset >= length) {
         violations.push(
           hard(
@@ -118,7 +122,7 @@ export function checkBar(
             "pitch-out-of-range",
             where,
             hand,
-            `${at} is outside the piano's range (${name(PIANO_LOWEST_MIDI)}–${name(PIANO_HIGHEST_MIDI)}).`,
+            `${at} is outside the piano's range (${name(PIANO_LOWEST_MIDI, spelling)}–${name(PIANO_HIGHEST_MIDI, spelling)}).`,
           ),
         );
       }
@@ -144,7 +148,7 @@ export function checkBar(
             "hand-span",
             where,
             hand,
-            `the notes at slot ${String(onset)} span ${name(low)} to ${name(high)} (${String(high - low)} semitones); one hand reaches at most a major 10th (${String(MAX_HAND_SPAN_SEMITONES)}). Spread it across beats or hands.`,
+            `the notes at slot ${String(onset)} span ${name(low, spelling)} to ${name(high, spelling)} (${String(high - low)} semitones); one hand reaches at most a major 10th (${String(MAX_HAND_SPAN_SEMITONES)}). Spread it across beats or hands.`,
           ),
         );
       }
@@ -170,6 +174,7 @@ function checkTies(
   bar: BarItem,
   next: BarItem | undefined,
   where: Where,
+  spelling: Spelling,
 ): Violation[] {
   if (!bar.body) return [];
   const violations: Violation[] = [];
@@ -186,8 +191,8 @@ function checkTies(
             where,
             hand,
             next
-              ? `${name(note.midi)} is tied, but the next bar doesn't start the same pitch at slot 0 in the same hand.`
-              : `${name(note.midi)} is tied out of the last bar, where nothing continues it. Remove the tie.`,
+              ? `${name(note.midi, spelling)} is tied, but the next bar doesn't start the same pitch at slot 0 in the same hand.`
+              : `${name(note.midi, spelling)} is tied out of the last bar, where nothing continues it. Remove the tie.`,
           ),
         );
       }
@@ -253,6 +258,7 @@ export function checkChunk(items: GridItem[]): Violation[] {
     );
     return violations;
   }
+  const spelling = spellingFor(header.key);
 
   // Structure: bars numbered 1..n, each with a plan line; HOLD, footer and END present.
   bars.forEach((bar, index) => {
@@ -329,8 +335,9 @@ export function checkChunk(items: GridItem[]): Violation[] {
   // Each bar on its own, then ties across bars.
   bars.forEach((bar, index) => {
     const where: Where = { kind: "bar", bar: bar.bar };
-    if (bar.body) violations.push(...checkBar(bar.body, header.meter, where));
-    violations.push(...checkTies(bar, bars[index + 1], where));
+    if (bar.body)
+      violations.push(...checkBar(bar.body, header.meter, where, spelling));
+    violations.push(...checkTies(bar, bars[index + 1], where, spelling));
   });
 
   // The holding pattern loops cleanly.
@@ -358,9 +365,10 @@ export function checkChunk(items: GridItem[]): Violation[] {
           ),
         );
       }
-      if (bar.body) violations.push(...checkBar(bar.body, header.meter, where));
+      if (bar.body)
+        violations.push(...checkBar(bar.body, header.meter, where, spelling));
       // Ties inside the pattern are fine; nothing may be tied out of its last bar.
-      violations.push(...checkTies(bar, holdBars[index + 1], where));
+      violations.push(...checkTies(bar, holdBars[index + 1], where, spelling));
     });
 
     const first = holdBars[0]?.body;

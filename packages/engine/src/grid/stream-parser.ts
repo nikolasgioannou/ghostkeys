@@ -1,4 +1,7 @@
-import { createGridLineParser } from "./line-parser.ts";
+import {
+  createGridLineParser,
+  type GridLineParserOptions,
+} from "./line-parser.ts";
 import type { GridItem } from "./schema.ts";
 
 /**
@@ -14,8 +17,9 @@ import type { GridItem } from "./schema.ts";
 export async function* parseGridStream(
   deltas: AsyncIterable<string>,
   signal?: AbortSignal,
+  options: GridLineParserOptions = {},
 ): AsyncGenerator<GridItem> {
-  const parser = createGridLineParser();
+  const parser = createGridLineParser(options);
   let pending = "";
 
   for await (const delta of deltas) {

@@ -6,6 +6,7 @@ import {
   PIANO_HIGHEST_MIDI,
   PIANO_LOWEST_MIDI,
   pitchToMidi,
+  spellingFor,
 } from "./pitch.ts";
 
 describe("pitchToMidi", () => {
@@ -80,5 +81,16 @@ describe("isOnPiano", () => {
     expect(isOnPiano(108)).toBe(true);
     expect(isOnPiano(109)).toBe(false);
     expect(isOnPiano(60.5)).toBe(false);
+  });
+});
+
+describe("spellingFor", () => {
+  it("uses flats in flat keys and sharps otherwise", () => {
+    expect(spellingFor({ tonic: "Db", mode: "major" })).toBe("flat");
+    expect(spellingFor({ tonic: "F", mode: "major" })).toBe("flat");
+    expect(spellingFor({ tonic: "D", mode: "minor" })).toBe("flat");
+    expect(spellingFor({ tonic: "C", mode: "major" })).toBe("sharp");
+    expect(spellingFor({ tonic: "B", mode: "minor" })).toBe("sharp");
+    expect(spellingFor({ tonic: "F#", mode: "major" })).toBe("sharp");
   });
 });

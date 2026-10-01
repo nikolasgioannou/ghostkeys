@@ -23,6 +23,8 @@ export const ChunkTimingsSchema = z.object({
   firstTokenMs: z.number().nullable(),
   /** From the request to the first complete bar. */
   firstBarMs: z.number().nullable(),
+  /** How long the revise turn took, if one ran. */
+  reviseMs: z.number().nullable(),
   totalMs: z.number(),
 });
 export type ChunkTimings = z.infer<typeof ChunkTimingsSchema>;
@@ -34,12 +36,25 @@ export const ComposerEventSchema = z.discriminatedUnion("type", [
     item: GridItemSchema,
     violations: z.array(ViolationSchema),
   }),
-  /** The whole chunk, checked. Only now is it playable. */
+  /** A bar replaced by the revise turn, with what the checks found in the new version. */
+  z.object({
+    type: z.literal("bar-revised"),
+    item: GridItemSchema,
+    violations: z.array(ViolationSchema),
+  }),
+  /**
+   * The whole chunk, checked (and revised if it needed it). Only now is it
+   * playable. `violations` lists what's still wrong after any revise.
+   */
   z.object({
     type: z.literal("chunk-complete"),
     items: z.array(GridItemSchema),
     violations: z.array(ViolationSchema),
+    /** Whether a revise turn ran. */
+    revised: z.boolean(),
     text: z.string(),
+    /** The revise turn's reply, if one ran. */
+    reviseText: z.string().nullable(),
     usage: ChunkUsageSchema,
     timings: ChunkTimingsSchema,
   }),

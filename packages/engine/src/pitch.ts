@@ -86,3 +86,16 @@ export function isOnPiano(midi: number): boolean {
     midi <= PIANO_HIGHEST_MIDI
   );
 }
+
+/** Keys whose signatures use flats, by tonic. */
+const FLAT_MAJOR_TONICS = new Set(["F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"]);
+const FLAT_MINOR_TONICS = new Set(["D", "G", "C", "F", "Bb", "Eb", "Ab"]);
+
+/** How to spell black keys in a key: flats in flat keys, sharps otherwise. */
+export function spellingFor(key: {
+  tonic: string;
+  mode: "major" | "minor";
+}): "sharp" | "flat" {
+  const flats = key.mode === "major" ? FLAT_MAJOR_TONICS : FLAT_MINOR_TONICS;
+  return flats.has(key.tonic) ? "flat" : "sharp";
+}
