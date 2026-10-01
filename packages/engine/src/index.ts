@@ -1,4 +1,14 @@
 export {
+  barLength,
+  checkBar,
+  checkChunk,
+  HOLD_MAX_BARS,
+  HOLD_MIN_BARS,
+  MAX_HAND_SPAN_SEMITONES,
+  MAX_NOTES_PER_ONSET,
+} from "./checks/playing-rules.ts";
+export { type Violation, ViolationSchema } from "./checks/violation.ts";
+export {
   createGridLineParser,
   type GridLineParser,
   parseKey,

@@ -1,13 +1,13 @@
 ---
 id: "61341d"
 title: Check bars against the playing rules
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - m1
 created_at: 2026-10-01T03:09:17.003Z
-updated_at: 2026-10-01T03:14:21.649Z
+updated_at: 2026-10-01T04:16:42.922Z
 blocked_by:
   - "6b98de"
 ---
@@ -31,3 +31,11 @@ Tests for every rule, each with a passing and a failing case.
 **Docs:** design.md → Composition (checker and repair policy); design.md → Grid format (the rule list stays in sync).
 
 **Done when:** the worked example passes cleanly and a test per rule proves the violation is located and worded for the revise prompt.
+
+## Outcome
+
+- `checks/violation.ts`: the shared `Violation` schema (rule, severity, where: bar / hold bar / chunk, hand, message).
+- `checks/playing-rules.ts`: `checkBar` (onset inside the bar, ending at or before the barline, a tied note ending exactly on it, the A0–C8 range, ≤5 notes per hand per onset, ≤ a major 10th per hand at one onset) and `checkChunk` (parse errors and unparsed bars, header, bar numbering, a plan line per bar, the first dynamic, HOLD/footer state/summary/END present, ties across bars and out of the last bar, holding-pattern length/numbering/ties/pedal at the loop point). Messages name the bar, hand, pitch and slot and say how to fix it.
+- Spec clarified: a tied note ends exactly at the barline; the hold-pattern and `F sum` rules listed explicitly.
+- 24 tests: the worked example and a minimal chunk pass cleanly; each rule has a failing and a fixed case; violation location and wording; wide arpeggios across onsets pass.
+- design.md → Composition records the checker and the repair policy (no deterministic repairs in v1).

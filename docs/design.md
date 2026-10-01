@@ -44,6 +44,10 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 **Claude writes every note** (invariant 1). Code validates and may suggest a draft, but never composes or silently edits notes.
 
+**Checks.** Code checks; Claude fixes (models catch only a fraction of their own errors). Every checker reports violations in one shape (`Violation`: rule, `hard` or `soft`, where — a bar, a holding-pattern bar or the chunk — the hand, and a message written to go straight into the revise prompt). The playing rules (`checkBar` for one bar as it arrives, `checkChunk` for the whole chunk) implement the hard rules in Part 3 → Grid format → Checker rules.
+
+**Repair policy:** v1 makes no deterministic repairs to notes. Violations go to the revise turn, and a bar still invalid after revising is never played.
+
 **From Claude to bars.** Claude's reply streams as text deltas that split lines anywhere. `parseGridStream` buffers partial lines and feeds the grid line parser one complete line at a time, yielding each item (a plan line, a bar, a footer line…) the moment its newline arrives; a final line without a newline is parsed when the stream ends, and an abort stops it at the next delta. It takes plain text, so the parser doesn't depend on the AI SDK.
 
 The grid format itself is specified in Part 3. It's drafted from the research, validated by the bake-off, and the user tweaks it at the end.
@@ -252,7 +256,7 @@ B1 R: F5@0:24 Eb5@24:6 Db5@30:6 | L: Db2@0:6 Ab2@6:6 F3@12:6 Ab3@18:6 Db4@24:6 A
 - `R:` the right hand's notes and `L:` the left hand's, both required (an empty hand is written `R: -`).
 - A **note** is `pitch@onset:duration`, in slots: `F5@0:24` starts at the downbeat and lasts a half note in 3/4. Pitches use the engine's notation (below). Notes in a hand are listed in onset order.
 - A **chord** joins pitches with `+`: `Db5+Gb5+Bb5@0:24`.
-- **Ties:** a note ending in `~` continues into the next bar, where the same hand must start the same pitch at slot 0 (`Ab5@24:12~`, then `Ab5@0:12`). Otherwise a note must end within its bar: onset + duration ≤ bar length.
+- **Ties:** a note ending in `~` continues into the next bar, where the same hand must start the same pitch at slot 0 (`Ab5@24:12~`, then `Ab5@0:12`). A tied note ends exactly at the barline. Otherwise a note must end within its bar: onset + duration ≤ bar length.
 - **Rests** are implied by gaps; there are no rest tokens.
 - **Melody:** the highest right-hand note at each onset is the melody. Mark a note with a trailing `!` to put the melody somewhere else (an inner or left-hand voice).
 - `ped:` (optional) sustain-pedal events: `v<slot>` down, `^<slot>` up, `c<slot>` change (up then straight back down). The pedal state carries from bar to bar until changed.
@@ -291,11 +295,12 @@ When checks fail, the revise turn answers with only what it corrects, in the sam
 **Hard** (always revised):
 
 - parse errors; a bar without a plan line, or bar numbers out of sequence; a missing `HOLD` block, footer `key=` line or `END`;
-- an onset outside the bar; a note running past the barline without a tie; a tie with no matching note at slot 0 of the next bar;
+- an onset outside the bar; a note running past the barline without a tie; a tied note that doesn't end at the barline; a tie with no matching note at slot 0 of the next bar, or out of the chunk's last bar;
 - a pitch outside A0–C8;
 - more than 5 notes in one hand at one onset; one hand's notes at the same onset spanning more than a major 10th (16 semitones; wide arpeggios across onsets are fine);
 - no `dyn=` on the chunk's first plan line;
-- a holding pattern that doesn't loop (above);
+- a holding pattern that doesn't loop: not 2–4 bars numbered from `H1`, a tie out of its last bar, or the pedal still down at its end without a change at the start of its first bar;
+- a missing `F sum` line;
 - a copy of a texture example, or a composer or work name in the footer.
 
 **Soft** (revised only above a threshold): notes that don't fit the bar's planned harmony (non-chord tones on strong slots beyond a share of the bar).
