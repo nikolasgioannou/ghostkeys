@@ -41,7 +41,7 @@ export interface ClaudeConfig {
  * built.
  */
 function openRouterFetch(base: typeof fetch, sessionId: string): typeof fetch {
-  return async (input, init) => {
+  const wrapped = async (...[input, init]: Parameters<typeof fetch>) => {
     if (typeof init?.body !== "string") return base(input, init);
     const body = JSON.parse(init.body) as Record<string, unknown>;
     body.model = OPENROUTER_MODEL;
@@ -49,6 +49,8 @@ function openRouterFetch(base: typeof fetch, sessionId: string): typeof fetch {
     body.session_id = sessionId;
     return base(input, { ...init, body: JSON.stringify(body) });
   };
+  // Some runtimes (Bun) give `fetch` extra members; carry them over unchanged.
+  return Object.assign(wrapped, base);
 }
 
 export function createClaude(config: ClaudeConfig): LanguageModel {

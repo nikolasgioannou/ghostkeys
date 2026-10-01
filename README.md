@@ -23,6 +23,7 @@ The script trusts `mise.toml`, installs the tools and dependencies, installs the
 | `bun run lint`      | Lints with ESLint (`lint:fix` to fix what it can).                             |
 | `bun run format`    | Formats with Prettier (`format:check` to check only).                          |
 | `bun run typecheck` | Typechecks every workspace.                                                    |
+| `bun run smoke`     | Makes a few real calls to Claude through OpenRouter (costs a few cents).       |
 
 ## Docs
 

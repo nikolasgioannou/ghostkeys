@@ -1,0 +1,17 @@
+{
+  "name": "@ghostkeys/smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke": "bun --env-file=../../.env src/smoke.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@ghostkeys/engine": "workspace:*",
+    "ai": "7.0.126",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2"
+  }
+}
