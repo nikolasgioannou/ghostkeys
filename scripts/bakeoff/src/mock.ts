@@ -168,8 +168,8 @@ export function mockModel(
                   cacheWrite: 0,
                 },
                 outputTokens: {
-                  total: text.length / 1.3,
-                  text: text.length / 1.3,
+                  total: Math.round(text.length / 1.3),
+                  text: Math.round(text.length / 1.3),
                   reasoning: 0,
                 },
               },

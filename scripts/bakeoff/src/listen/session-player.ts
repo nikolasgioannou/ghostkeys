@@ -23,31 +23,36 @@ export interface ScheduledSession {
   stop(): void;
 }
 
+/** How far ahead notes are handed to the piano, and how often the queue is topped up. */
+const LOOKAHEAD_SEC = 0.5;
+const TICK_MS = 50;
+
+type Event =
+  | {
+      kind: "note";
+      time: number;
+      note: number;
+      velocity: number;
+      duration: number;
+    }
+  | { kind: "pedal"; time: number; down: boolean };
+
 /**
- * Schedules a whole session (its chunks back to back, holding patterns
- * skipped) on a piano, up front. Every bar that parses plays, with or without
- * violations; a bar that doesn't parse is a rest of its length. Notes are
- * humanized the way the app will humanize them.
+ * Plays a whole session (its chunks back to back, holding patterns skipped)
+ * on a piano. Every bar that parses plays, with or without violations; a bar
+ * that doesn't parse is a rest of its length. Notes are humanized the way the
+ * app will humanize them. Events are handed to the piano only a moment ahead
+ * (a lookahead loop), so stopping really stops: nothing is left queued inside
+ * the piano library.
  */
 export function scheduleSession(
   run: RunFile,
   piano: PianoLike,
   context: AudioContext,
 ): ScheduledSession {
-  const begin = context.currentTime + 0.5;
+  const begin = context.currentTime + 0.3;
   let at = begin;
-  let notes = 0;
-  const timers: ReturnType<typeof setTimeout>[] = [];
-  const pedalAt = (time: number, down: boolean) => {
-    timers.push(
-      setTimeout(
-        () => {
-          piano.pedal(down);
-        },
-        Math.max(0, (time - context.currentTime) * 1000),
-      ),
-    );
-  };
+  const events: Event[] = [];
 
   for (const chunk of run.chunks) {
     if (chunk.outcome !== "complete") continue;
@@ -60,7 +65,6 @@ export function scheduleSession(
         bar,
       ]),
     );
-
     for (const item of chunk.items) {
       if (item.type !== "bar") continue;
       const bar = timed.get(item.bar);
@@ -69,26 +73,62 @@ export function scheduleSession(
         continue;
       }
       for (const note of bar.notes) {
-        piano.start({
+        events.push({
+          kind: "note",
+          time: at + note.offsetSec,
           note: note.midi,
           velocity: note.velocity,
-          time: at + note.offsetSec,
           duration: note.durSec,
         });
-        notes += 1;
       }
       for (const event of bar.pedal)
-        pedalAt(at + event.offsetSec, event.kind === "down");
+        events.push({
+          kind: "pedal",
+          time: at + event.offsetSec,
+          down: event.kind === "down",
+        });
       at += bar.durationSec;
     }
   }
-  pedalAt(at, false);
+  events.push({ kind: "pedal", time: at, down: false });
+  events.sort((a, b) => a.time - b.time);
+
+  let next = 0;
+  const tick = () => {
+    const horizon = context.currentTime + LOOKAHEAD_SEC;
+    while (next < events.length && (events[next]?.time ?? Infinity) < horizon) {
+      const event = events[next];
+      next += 1;
+      if (!event) continue;
+      if (event.kind === "note") {
+        piano.start({
+          note: event.note,
+          velocity: event.velocity,
+          time: event.time,
+          duration: event.duration,
+        });
+      } else {
+        // The pedal applies immediately, so wait until its moment.
+        const delay = Math.max(0, (event.time - context.currentTime) * 1000);
+        pedalTimers.push(
+          setTimeout(() => {
+            piano.pedal(event.down);
+          }, delay),
+        );
+      }
+    }
+    if (next >= events.length) clearInterval(loop);
+  };
+  const pedalTimers: ReturnType<typeof setTimeout>[] = [];
+  const loop = setInterval(tick, TICK_MS);
+  tick();
 
   return {
     durationSec: at - begin,
-    notes,
+    notes: events.filter((event) => event.kind === "note").length,
     stop() {
-      for (const timer of timers) clearTimeout(timer);
+      clearInterval(loop);
+      for (const timer of pedalTimers) clearTimeout(timer);
       piano.pedal(false);
       piano.stop();
     },
