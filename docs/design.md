@@ -48,6 +48,14 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 **Repair policy:** v1 makes no deterministic repairs to notes. Violations go to the revise turn, and a bar still invalid after revising is never played.
 
+**Texture examples.** Short labelled examples raised valid output from 25% to 75% in the closest published system, so the composer is shown three (`TEXTURE_EXAMPLES`), each a 4-bar grid fragment transcribed from a public-domain Mutopia Project edition's MIDI file (notes, onsets, durations and pedal from the file; plan lines are our analysis):
+
+- **Nocturne accompaniment:** a melody over wide left-hand arpeggios, pedalled (6/8, F minor).
+- **Waltz:** bass on the downbeat, chords on two and three, a singing melody (3/4, B minor).
+- **Inner triplets:** a melody over triplets shared between the hands (2/4, G major).
+
+Claude sees only each example's texture label and grid. The citation (composer, work, bars, source URL, licence) stays in the engine's data and never reaches a prompt (invariant 3). Every example parses, breaks no playing rule and has no hard harmony violation; the tests hold them to that. The planning research suggested a chorale and a syncopated inner voice too, but the Mutopia editions of those textures that are marked public domain didn't transcribe cleanly from MIDI, so the set is three for now.
+
 **From Claude to bars.** Claude's reply streams as text deltas that split lines anywhere. `parseGridStream` buffers partial lines and feeds the grid line parser one complete line at a time, yielding each item (a plan line, a bar, a footer line…) the moment its newline arrives; a final line without a newline is parsed when the stream ends, and an abort stops it at the next delta. It takes plain text, so the parser doesn't depend on the AI SDK.
 
 The grid format itself is specified in Part 3. It's drafted from the research, validated by the bake-off, and the user tweaks it at the end.
@@ -309,7 +317,7 @@ When checks fail, the revise turn answers with only what it corrects, in the sam
 
 ### Token budget
 
-Generation has to keep ahead of playback, so the syntax is short: no rest tokens, durations in slots, one line per bar. Tokens per bar are measured on the texture examples once they exist; the research estimated 1–2k output tokens per minute of music for a compact format.
+Generation has to keep ahead of playback, so the syntax is short: no rest tokens, durations in slots, one line per bar. On the texture examples a bar costs about 110–170 characters including its plan line, roughly 35–55 tokens by a character estimate; the smoke test measures real token counts. At about 2.5–3.5 s per bar, that's roughly 0.6–1.3k visible tokens per minute of music, within the research's 1–2k estimate for a compact format, before thinking and revise.
 
 ### Pitches
 

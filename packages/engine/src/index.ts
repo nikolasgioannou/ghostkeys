@@ -16,6 +16,10 @@ export {
 } from "./checks/playing-rules.ts";
 export { type Violation, ViolationSchema } from "./checks/violation.ts";
 export {
+  TEXTURE_EXAMPLES,
+  type TextureExample,
+} from "./composer/texture-examples.ts";
+export {
   createGridLineParser,
   type GridLineParser,
   parseKey,
