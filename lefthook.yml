@@ -1,0 +1,10 @@
+rc: scripts/lefthook.rc
+
+pre-commit:
+  jobs:
+    # Format what's being committed, then run every check.
+    - name: format
+      run: bunx prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: check
+      run: bun run check

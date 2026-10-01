@@ -6,6 +6,7 @@
 #   2. mise.toml is trusted
 #   3. Tools are installed (Bun, Node, Moth)
 #   4. Dependencies are installed
+#   5. Git hooks are installed (lefthook)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -57,4 +58,16 @@ if printf '%s' "$install_log" | grep -q 'installed'; then
   doing "installed dependencies"
 else
   done_ "dependencies are installed"
+fi
+
+# 5. Git hooks
+hooks_ok=true
+for hook in pre-commit; do
+  grep -qs lefthook ".git/hooks/$hook" || hooks_ok=false
+done
+if $hooks_ok; then
+  done_ "git hooks are installed"
+else
+  doing "installing git hooks (lefthook)"
+  mise exec -- bunx lefthook install >/dev/null
 fi
