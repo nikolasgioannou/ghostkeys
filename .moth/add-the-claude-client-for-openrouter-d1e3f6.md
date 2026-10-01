@@ -1,14 +1,14 @@
 ---
 id: "d1e3f6"
 title: Add the Claude client for OpenRouter
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - llm
   - m1
 created_at: 2026-10-01T03:10:00.579Z
-updated_at: 2026-10-01T03:14:21.712Z
+updated_at: 2026-10-01T04:26:02.242Z
 blocked_by:
   - "2c06c7"
 ---
@@ -27,3 +27,11 @@ Reach Claude Opus 5.5 through OpenRouter with the Vercel AI SDK, as decided in d
 **Docs:** design.md → Claude access (client shape, shim, env loading, pins); README (create `.env` and paste the key).
 
 **Done when:** the contract test passes offline, and the main engine entry can be bundled for the browser without `ai` in the bundle.
+
+## Outcome
+
+- Research: `ai` 7.0.126 and `@ai-sdk/anthropic` 4.0.71 (pinned exactly, in the engine); confirmed `createAnthropic({ baseURL, authToken, fetch })`, AI SDK 7's `instructions` with per-message `providerOptions`, and the Anthropic options `effort`, adaptive `thinking` and `cacheControl` (with `ttl`). OpenRouter's `/messages` takes the session id as body `session_id` or `x-session-id`; the body wins, so the shim sets the body.
+- `llm/client.ts`: `createClaude({ apiKey, sessionId, fetch? })` with the OpenRouter fetch shim (model slug, provider pin, session id). Exported only from the `@ghostkeys/engine/llm` subpath; a browser build of the main entry contains no AI SDK code (checked with `bun build --target browser`).
+- Contract test (fake fetch, no network): URL, Bearer auth (no `x-api-key`), rewritten model, provider pin, session id, `max_tokens`, adaptive thinking, `output_config.effort`, `cache_control` on the system block, and the user message.
+- `.env.example` at the root; `scripts/setup.sh` step 6 creates `.env` and reminds you to add the key. `.env` confirmed gitignored.
+- design.md → Claude access (client shape, shim, env loading); README (the key step).

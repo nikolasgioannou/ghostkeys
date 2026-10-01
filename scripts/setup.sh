@@ -7,6 +7,7 @@
 #   3. Tools are installed (Bun, Node, Moth)
 #   4. Dependencies are installed
 #   5. Git hooks are installed (lefthook)
+#   6. .env exists (copied from .env.example; you paste the key in)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -70,4 +71,15 @@ if $hooks_ok; then
 else
   doing "installing git hooks (lefthook)"
   mise exec -- bunx lefthook install >/dev/null
+fi
+
+# 6. .env
+if [ -f .env ]; then
+  done_ ".env exists"
+else
+  doing "creating .env from .env.example (paste your OPENROUTER_API_KEY into it)"
+  cp .env.example .env
+fi
+if ! grep -qE '^OPENROUTER_API_KEY=.+' .env; then
+  printf '    add your OpenRouter key to .env: OPENROUTER_API_KEY=sk-or-...\n'
 fi

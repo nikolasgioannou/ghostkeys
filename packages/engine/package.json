@@ -3,12 +3,15 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./llm": "./src/llm/index.ts"
   },
   "scripts": {
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "4.0.71",
+    "ai": "7.0.126",
     "zod": "4.6.5"
   }
 }

@@ -12,7 +12,7 @@ You need [mise](https://mise.jdx.dev/getting-started.html). It provides Bun, Nod
 scripts/setup.sh
 ```
 
-The script trusts `mise.toml`, installs the tools and dependencies, and installs the git hooks. It's safe to re-run; on a set-up checkout it prints only ✓ lines.
+The script trusts `mise.toml`, installs the tools and dependencies, installs the git hooks, and creates `.env` from `.env.example`. Paste your [OpenRouter API key](https://openrouter.ai/keys) into `.env` as `OPENROUTER_API_KEY`; `.env` is gitignored and never committed. It's safe to re-run; on a set-up checkout it prints only ✓ lines.
 
 ## Scripts
 
