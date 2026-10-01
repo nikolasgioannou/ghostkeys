@@ -42,6 +42,12 @@ export {
   ComposerEventSchema,
 } from "./composer/events.ts";
 export {
+  CONTEXT_BARS,
+  MAX_THEMES,
+  nextContext,
+  SUMMARY_SENTENCES,
+} from "./composer/next-context.ts";
+export {
   buildComposerMessage,
   COMPOSER_SYSTEM_PROMPT,
 } from "./composer/prompt.ts";

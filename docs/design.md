@@ -26,7 +26,7 @@ Browser (TanStack Start client)                     Server (TanStack Start on Bu
 
 There is one piece, and it never ends. It's an _endless fantasia_: a bank of named themes (3–5 motifs) that return transformed, a slowly drifting state (key, tempo, mood, texture), a key-area roadmap a few chunks ahead, and a running summary of what has happened so far. Phrases flow into each other with no hard section breaks.
 
-The piece is composed in **chunks** of bars. Each chunk ends with a machine-readable footer (key, last chord, pedal state, summary and theme-bank updates, roadmap) that the next chunk continues from. Claude writes all of it; code only carries it forward.
+The piece is composed in **chunks** of bars. Each chunk ends with a machine-readable footer (key, last chord, pedal state, summary and theme-bank updates, roadmap) that the next chunk continues from. Claude writes all of it; code only carries it forward. `nextContext(context, complete)` is that hand-off: it folds a finished chunk (the `chunk-complete` payload) into the next chunk's `ComposerContext`, and the bake-off and the app both use it.
 
 ## Composition
 
@@ -361,6 +361,24 @@ F theme A F5@0:24 Eb5@24:6 Db5@30:6
 F road Bbm:darker Gb:warmer Db:home
 END
 ```
+
+## Piece state & data model
+
+**`ComposerContext`** (`composer/context.ts`) is what the composer is told about where the piece is. Everything musical in it was written by Claude and is kept as written:
+
+| Field            | What it holds                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `steeringNote`   | where to head, in idiom, texture and mood terms (code or the conductor writes it; never the listener's words)       |
+| `previousHeader` | the last chunk's `CHUNK` line; `null` for a fresh piece                                                             |
+| `previousBars`   | the last chunk's last `CONTEXT_BARS` (4) bars: their `P` lines, then their `B` lines, as written (after any revise) |
+| `previousFooter` | the last chunk's `F key=… chord=… ped=…` line                                                                       |
+| `themes`         | the theme bank: name plus the theme's notes as written, at most `MAX_THEMES` (5)                                    |
+| `roadmap`        | the latest `F road` line                                                                                            |
+| `summary`        | the running summary, the last `SUMMARY_SENTENCES` (6) sentences                                                     |
+
+`EMPTY_CONTEXT` is a fresh piece.
+
+**The fold** (`nextContext`): the header, last bars and footer state are replaced by the new chunk's; the summary gains the chunk's `F sum` sentence and keeps only its most recent sentences; `F theme` adds or replaces a theme (moving it to the newest), `F drop` removes one, and when the bank is over its cap the oldest themes go; `F road` replaces the roadmap, and a chunk without one keeps the old roadmap; the steering note carries over unchanged. However long the piece runs, the context stays bounded.
 
 ## Stream events
 
