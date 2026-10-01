@@ -1,13 +1,13 @@
 ---
 id: "322400"
 title: Write AGENTS.md with the repo's working principles
-status: todo
+status: done
 priority: none
 labels:
   - docs
   - m0
 created_at: 2026-10-01T03:07:59.614Z
-updated_at: 2026-10-01T03:15:38.221Z
+updated_at: 2026-10-01T03:57:18.674Z
 blocked_by:
   - "53f225"
 ---
@@ -38,3 +38,9 @@ There is deliberately no `CLAUDE.md`: Claude Code reads AGENTS.md natively, but 
 **Docs:** AGENTS.md itself; design.md → Repo, tooling & gate records why there's no CLAUDE.md.
 
 **Done when:** a new Claude Code session in the repo shows AGENTS.md loaded (`/memory`), and every rule above is in it.
+
+## Outcome
+
+- `AGENTS.md` at the root with the ticket rules and principles above; commands are left to `package.json` and the README.
+- design.md → Repo, tooling & gate records why there's no CLAUDE.md.
+- Loading via `/memory` is checked the next time a Claude Code session opens in the repo (this session predates the file).
