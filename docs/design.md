@@ -44,7 +44,7 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 **Claude writes every note** (invariant 1). Code validates and may suggest a draft, but never composes or silently edits notes.
 
-**Checks.** Code checks; Claude fixes (models catch only a fraction of their own errors). Every checker reports violations in one shape (`Violation`: rule, `hard` or `soft`, where — a bar, a holding-pattern bar or the chunk — the hand, and a message written to go straight into the revise prompt). The playing rules (`checkBar` for one bar as it arrives, `checkChunk` for the whole chunk) implement the hard rules in Part 3 → Grid format → Checker rules.
+**Checks.** Code checks; Claude fixes (models catch only a fraction of their own errors). Every checker reports violations in one shape (`Violation`: rule, `hard` or `soft`, where — a bar, a holding-pattern bar or the chunk — the hand, and a message written to go straight into the revise prompt). The playing rules (`checkBar` for one bar as it arrives, `checkChunk` for the whole chunk) implement the hard rules in Part 3 → Grid format → Checker rules; `checkHarmony` checks the notes against each bar's planned chord. The Roman-numeral logic is written in-house rather than taken from a theory library such as Tonal, because the grammar is ours (secondary targets, named augmented sixths, the minor-key leading tone).
 
 **Repair policy:** v1 makes no deterministic repairs to notes. Violations go to the revise turn, and a bar still invalid after revising is never played.
 
@@ -303,7 +303,9 @@ When checks fail, the revise turn answers with only what it corrects, in the sam
 - a missing `F sum` line;
 - a copy of a texture example, or a composer or work name in the footer.
 
-**Soft** (revised only above a threshold): notes that don't fit the bar's planned harmony (non-chord tones on strong slots beyond a share of the bar).
+**Harmony** (`checkHarmony`): notes on strong slots (every beat: the beat unit, or a dotted quarter in 6/8, 9/8 and 12/8) should be tones of the bar's planned chord in its local key. Weak-slot passing and neighbour tones, chromatic colour and suspensions tied over the barline never count. A bar whose share of off-chord strong notes is above `HARMONY_SOFT_THRESHOLD` (0.34) is **soft**; above `HARMONY_HARD_THRESHOLD` (0.67), clearly the wrong harmony, it's **hard**. The bake-off tunes both.
+
+**Chord vocabulary** (`chordPitchClasses`): roots come from the key's own scale (major, or natural minor), except that a lowercase seventh degree in minor is the raised leading tone (`viio7`) while an uppercase one is the subtonic (`VII`); `b`/`#` move the root a semitone. Uppercase is a major triad, lowercase minor, `o` diminished, `h` half-diminished, `+` augmented. Seventh figures (`7`, `65`, `43`, `42`) add a minor seventh (a diminished seventh after `o`); `maj7` adds a major seventh. A secondary chord (`V7/V`) is figured from its target's root, in major for an uppercase target and minor for a lowercase one. The named chords are relative to the tonic: `N6` (♭2, 4, ♭6), `It6` (♭6, 1, ♯4), `Fr6` (♭6, 1, 2, ♯4), `Ger6` (♭6, 1, ♭3, ♯4).
 
 ### Token budget
 

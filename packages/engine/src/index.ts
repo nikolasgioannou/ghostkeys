@@ -1,4 +1,11 @@
 export {
+  beatLength,
+  checkHarmony,
+  chordPitchClasses,
+  HARMONY_HARD_THRESHOLD,
+  HARMONY_SOFT_THRESHOLD,
+} from "./checks/harmony.ts";
+export {
   barLength,
   checkBar,
   checkChunk,
