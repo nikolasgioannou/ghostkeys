@@ -1,0 +1,6 @@
+{
+  // Root-level config files (vitest.config.ts and friends). Packages have
+  // their own tsconfig.json; the root typecheck script runs both.
+  "extends": "./tsconfig.base.json",
+  "include": ["*.ts"]
+}

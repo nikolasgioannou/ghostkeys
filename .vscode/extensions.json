@@ -1,0 +1,7 @@
+{
+  // Extensions for the repo's tools.
+  "recommendations": [
+    // Runs and debugs the Vitest suite from the Testing view.
+    "vitest.explorer"
+  ]
+}

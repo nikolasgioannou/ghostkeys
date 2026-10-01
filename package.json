@@ -7,9 +7,13 @@
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "bun --filter '*' typecheck"
+    "typecheck": "tsc && bun --filter '*' typecheck",
+    "test": "bun --bun vitest run",
+    "test:watch": "bun --bun vitest"
   },
   "devDependencies": {
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
   }
 }

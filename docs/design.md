@@ -130,7 +130,7 @@ ghostkeys/
 - **Tool versions:** mise (`mise.toml`) pins Bun (1.4.2), Node (24) and Moth (0.5.0). Node is pinned because tools such as ESLint, Prettier and the editor extensions run with Node shebangs. A fresh clone's `mise.toml` must be trusted (`mise trust`) before mise uses it.
 - **Root package:** `private`, ESM, workspaces `apps/*` and `packages/*`. `bun.lock` (text) appears with the first dependency and is committed; installs use `--frozen-lockfile`.
 - **Lint and format:** ESLint 10 (flat `eslint.config.ts`, typescript-eslint `strictTypeChecked`, `@eslint-react` because the classic React plugin doesn't support ESLint 10, react-hooks, the TanStack Router plugin, `eslint-plugin-better-tailwindcss` for correctness, `simple-import-sort`, `eslint-config-prettier` last) and Prettier 3 (`prettier-plugin-packagejson`, `prettier-plugin-tailwindcss` for class order). One root config for the monorepo.
-- **Tests:** Vitest, run under Bun.
+- **Tests:** Vitest, run under Bun (see Testing). A root `tsconfig.json` typechecks root-level config files; the root `typecheck` runs it and every workspace's.
 - **The gate:** a lefthook pre-commit hook runs Prettier on staged files, then `bun run check` (moth check → format check → ESLint → typecheck → tests → build). commitlint checks the message.
 - **AGENTS.md:** the working rules for people and coding agents. There is deliberately no `CLAUDE.md`: Claude Code reads AGENTS.md natively, but only when no CLAUDE.md exists ([research/06](research/06-workflow-conventions.md)).
 - **Commits:** Conventional Commits on a single line; the subject is the ticket title in lowercase.
@@ -160,6 +160,9 @@ One **streaming server function per chunk**: a `createServerFn` async generator 
 
 ## Testing
 
+- **Runner:** Vitest 5 (with Vite 8, its peer), one root `vitest.config.ts` whose projects are the workspaces. `bun run test` runs everything once under the Bun runtime (`bun --bun vitest run`); `bun run test:watch` watches. Under Bun, tests can import Bun built-ins such as `bun:sqlite`; under Node they can't.
+- **Editor:** the Vitest extension (`vitest.explorer`) runs tests under Node, so tests that need Bun built-ins will only pass from the command line unless the editor is pointed at Bun.
+- Tests sit next to the code (`*.test.ts`). The engine's tests are typechecked with the engine and don't bring Node or Bun globals into it.
 - Deterministic code (the grid parser, checkers, continuity, timing and humanization, the playback queue, failure handling, the database) gets thorough unit tests.
 - Code that calls Claude is tested against the AI SDK's mock models (`ai/test`) with scripted streams, plus a contract test for the OpenRouter request shape. These run offline and cost nothing.
 - Musical quality is judged by ear, through the bake-off and listening sessions.
@@ -212,6 +215,7 @@ The notation Claude composes in. The full specification comes with the grid-form
 - **Generation might not keep ahead of playback.** The grid format, thinking and the revise turn all cost output tokens. The bake-off measures the real-time factor and stops if no variant keeps up.
 - **TanStack Start is a release candidate** that ships almost daily, and APIs get renamed. Pin exact versions.
 - **Forgetting `--bun`** makes `bun:sqlite` fail under Vite.
+- **Editor test runs use Node:** the Vitest extension can't run tests that import Bun built-ins (the database package's).
 - **Abort propagation** from browser to server function has changed between TanStack releases.
 - **Silent streams:** with thinking hidden, a stream can be silent for tens of seconds, and Bun's server closes idle connections after 10 s by default.
 - **The OpenRouter fetch shim** depends on `@ai-sdk/anthropic` internals.
