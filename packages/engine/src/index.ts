@@ -64,6 +64,19 @@ export {
 export * from "./grid/schema.ts";
 export { parseGridStream } from "./grid/stream-parser.ts";
 export {
+  DYNAMIC_VELOCITY,
+  FERMATA_BEATS,
+  HAIRPIN_VELOCITY,
+  RIT_END_FACTOR,
+  timeChunk,
+  type TimedBar,
+  TimedBarSchema,
+  type TimedNote,
+  TimedNoteSchema,
+  type TimedPedal,
+  TimedPedalSchema,
+} from "./performance/timing.ts";
+export {
   isOnPiano,
   midiToPitch,
   PIANO_HIGHEST_MIDI,

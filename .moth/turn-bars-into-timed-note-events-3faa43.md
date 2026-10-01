@@ -1,14 +1,14 @@
 ---
 id: "3faa43"
 title: Turn bars into timed note events
-status: todo
+status: done
 priority: none
 labels:
   - audio
   - engine
   - m2
 created_at: 2026-10-01T03:10:48.830Z
-updated_at: 2026-10-01T03:29:53.340Z
+updated_at: 2026-10-01T04:54:05.155Z
 blocked_by:
   - "6b98de"
 ---
@@ -26,3 +26,9 @@ Bridge from notation to sound: convert parsed bars into note events a player can
 **Docs:** design.md → Playback (the event shape and the dynamics scale).
 
 **Done when:** the worked example converts to the expected events and the tests pass.
+
+## Outcome
+
+- `performance/timing.ts`: `timeChunk(items)` → `{ bars, hold }` of `TimedBar` (Zod schemas for timed bars, notes and pedal events). Bar-relative offsets in seconds; linear-tempo integration for `rit` (to 0.8× by the bar's end, that bar only), `q=NN`, `atempo`, `fermata` (+1 beat); ties joined into one note (continuation not re-struck); dynamics → base velocity (pp 36 … ff 104), hairpins ±12 across the bar, carried forward; pedal change → up then down; melody flag (top RH per onset, or `!`); phrase ends from the plan; holding pattern timed with the state at the chunk's end.
+- 11 tests on the worked example (durations, triplet offsets, velocities and both hairpins, the tie, the rit, pedal, melody and phrase end) and on `q=`, fermata and dynamics.
+- design.md → Playback (timing, dynamics scale).
