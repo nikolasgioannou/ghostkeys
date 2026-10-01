@@ -4,5 +4,9 @@
 
   // Use the repo's TypeScript (pinned to 6.0), not the one bundled with VS Code.
   "js/ts.tsdk.path": "node_modules/typescript/lib",
-  "js/ts.tsdk.promptToUseWorkspaceVersion": true
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+
+  // Prettier formats on save.
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
 }

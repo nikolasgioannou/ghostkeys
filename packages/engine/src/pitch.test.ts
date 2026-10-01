@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { isOnPiano, midiToPitch, PIANO_HIGHEST_MIDI, PIANO_LOWEST_MIDI, pitchToMidi } from "./pitch.ts";
+import {
+  isOnPiano,
+  midiToPitch,
+  PIANO_HIGHEST_MIDI,
+  PIANO_LOWEST_MIDI,
+  pitchToMidi,
+} from "./pitch.ts";
 
 describe("pitchToMidi", () => {
   it("puts middle C at 60 and A4 at 69", () => {
@@ -25,12 +31,22 @@ describe("pitchToMidi", () => {
     expect(pitchToMidi("B#3")).toBe(60);
   });
 
-  it.each(["c4", "H4", "C##4", "Cbb4", "C♯4", "C9", "C-1", "C", "4", "", " C4", "C4 "])(
-    "rejects %j",
-    (text) => {
-      expect(pitchToMidi(text)).toBeNull();
-    },
-  );
+  it.each([
+    "c4",
+    "H4",
+    "C##4",
+    "Cbb4",
+    "C♯4",
+    "C9",
+    "C-1",
+    "C",
+    "4",
+    "",
+    " C4",
+    "C4 ",
+  ])("rejects %j", (text) => {
+    expect(pitchToMidi(text)).toBeNull();
+  });
 });
 
 describe("midiToPitch", () => {

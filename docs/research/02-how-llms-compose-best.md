@@ -15,7 +15,7 @@ _Research brief, 2026-09-30. Hard evidence on musical **quality** is thin; most 
 
 - **Plan first, then notes.** Text2Score: LLM writes a per-bar plan (key, chord pitch-class set, range, density, dynamics) before notes; plan quality drives output (key match 89% → 69% with weaker planners). Direct ABC via ComposerX was valid only ~50% of the time (https://arxiv.org/html/2605.13431).
 - **Role split helps:** ComposerX's melody/harmony/reviewer agents preferred over single-agent 57–77% (https://arxiv.org/html/2404.18081v1).
-- **Tension with "Claude writes every note":** code may *propose* a transformed draft (e.g. motif M1 sequenced up a 3rd) but Claude rewrites each bar in full.
+- **Tension with "Claude writes every note":** code may _propose_ a transformed draft (e.g. motif M1 sequenced up a 3rd) but Claude rewrites each bar in full.
 
 ## 3. Reasoning and revision
 
@@ -35,13 +35,13 @@ No LLM study of endless pieces found. Practitioner pattern: rolling context (inf
 
 ## 6. Failure modes
 
-| Failure | Source | Fix |
-|---|---|---|
-| Bar-duration errors | LilyBench, Text2Score | Grid + parser that bounces bad bars (https://github.com/alexnodeland/llmcomposer) |
-| Simple repetitive rhythm, off-key notes | 2407.21531 | Check notes against the planned chord per bar |
-| "Chord conveyor belt", over-stepwise melody, uneven density | Libretto | Percentile checks on harmonic rhythm, steps, density |
-| Parallels, voices out of range | Bach benchmark | Outer-voice parallel check; span ≤ a 10th per hand |
-| Flat dynamics, unchanging texture | — | Required per-bar dynamics + texture field; variance checks across chunks |
+| Failure                                                     | Source                | Fix                                                                               |
+| ----------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| Bar-duration errors                                         | LilyBench, Text2Score | Grid + parser that bounces bad bars (https://github.com/alexnodeland/llmcomposer) |
+| Simple repetitive rhythm, off-key notes                     | 2407.21531            | Check notes against the planned chord per bar                                     |
+| "Chord conveyor belt", over-stepwise melody, uneven density | Libretto              | Percentile checks on harmonic rhythm, steps, density                              |
+| Parallels, voices out of range                              | Bach benchmark        | Outer-voice parallel check; span ≤ a 10th per hand                                |
+| Flat dynamics, unchanging texture                           | —                     | Required per-bar dynamics + texture field; variance checks across chunks          |
 
 ## Ranked recommendation
 

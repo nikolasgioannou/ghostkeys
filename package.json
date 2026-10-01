@@ -7,11 +7,15 @@
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "tsc && bun --filter '*' typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "bun --bun vitest run",
-    "test:watch": "bun --bun vitest"
+    "test:watch": "bun --bun vitest",
+    "typecheck": "tsc && bun --filter '*' typecheck"
   },
   "devDependencies": {
+    "prettier": "3.9.9",
+    "prettier-plugin-packagejson": "3.0.2",
     "typescript": "6.0.3",
     "vite": "8.3.1",
     "vitest": "5.0.3"

@@ -21,8 +21,34 @@ const LETTER_SEMITONES: Record<string, number> = {
   B: 11,
 };
 
-const SHARP_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
-const FLAT_NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"] as const;
+const SHARP_NAMES = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+] as const;
+const FLAT_NAMES = [
+  "C",
+  "Db",
+  "D",
+  "Eb",
+  "E",
+  "F",
+  "Gb",
+  "G",
+  "Ab",
+  "A",
+  "Bb",
+  "B",
+] as const;
 
 /**
  * The MIDI number of a pitch such as `C4`, `F#3` or `Bb5`, or `null` if the
@@ -42,7 +68,10 @@ export function pitchToMidi(pitch: string): number | null {
  * The pitch name for a MIDI number, spelled with sharps unless flats are
  * asked for. Returns `null` outside the octaves the notation covers (C0–B8).
  */
-export function midiToPitch(midi: number, spelling: "sharp" | "flat" = "sharp"): string | null {
+export function midiToPitch(
+  midi: number,
+  spelling: "sharp" | "flat" = "sharp",
+): string | null {
   if (!Number.isInteger(midi) || midi < 12 || midi > 119) return null;
   const names = spelling === "flat" ? FLAT_NAMES : SHARP_NAMES;
   const octave = Math.floor(midi / 12) - 1;
@@ -51,5 +80,9 @@ export function midiToPitch(midi: number, spelling: "sharp" | "flat" = "sharp"):
 
 /** Whether a MIDI number is a key on an 88-key piano (A0–C8). */
 export function isOnPiano(midi: number): boolean {
-  return Number.isInteger(midi) && midi >= PIANO_LOWEST_MIDI && midi <= PIANO_HIGHEST_MIDI;
+  return (
+    Number.isInteger(midi) &&
+    midi >= PIANO_LOWEST_MIDI &&
+    midi <= PIANO_HIGHEST_MIDI
+  );
 }

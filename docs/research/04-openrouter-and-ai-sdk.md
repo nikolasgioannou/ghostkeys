@@ -27,20 +27,26 @@ _Research briefs, 2026-09-30 (OpenRouter + AI SDK). AI SDK behavior was checked 
 ```ts
 const orFetch: typeof fetch = (url, init) => {
   const b = JSON.parse(String(init!.body));
-  b.model = 'anthropic/claude-opus-5.5';
-  b.provider = { only: ['anthropic'], allow_fallbacks: false };
+  b.model = "anthropic/claude-opus-5.5";
+  b.provider = { only: ["anthropic"], allow_fallbacks: false };
   return fetch(url, { ...init, body: JSON.stringify(b) });
 };
-const or = createAnthropic({ baseURL: 'https://openrouter.ai/api/v1', authToken: env.OPENROUTER_API_KEY, fetch: orFetch });
-const model = or('claude-opus-5-5');
+const or = createAnthropic({
+  baseURL: "https://openrouter.ai/api/v1",
+  authToken: env.OPENROUTER_API_KEY,
+  fetch: orFetch,
+});
+const model = or("claude-opus-5-5");
 ```
 
 Composer: `streamText({ model, maxOutputTokens: 32000, abortSignal, instructions: { role: 'system', content, providerOptions: { anthropic: { cacheControl: { type: 'ephemeral', ttl: '1h' } } } }, messages, headers: { 'x-session-id': id }, providerOptions: { anthropic: { effort, thinking: { type: 'adaptive', display: 'omitted' } } } })`, iterate `result.stream` text deltas into the line parser. Conductor: `generateText({ output: Output.object({ schema }) , providerOptions: { anthropic: { effort: 'low' } } })`.
 
 ## Fit with TanStack Start
+
 Skip the AI SDK UI layer (`useChat`, UI message streams). Call `streamText` inside a `createServerFn` async generator; the engine's parser consumes an `AsyncIterable<string>`. Abort propagation from client to server function has varied between releases (TanStack/router #4651, #3490, PR #8134) → own `AbortController`, abort in the generator's `finally`, and test a real disconnect.
 
 ## Gotchas
+
 - Revise turns: resend the prior assistant message **unmodified** (reasoning parts carry signatures) or the API rejects it (vercel/ai#21734).
 - No assistant prefill on Opus 5.5.
 - Thinking counts against `maxOutputTokens` — set well above the visible output size.

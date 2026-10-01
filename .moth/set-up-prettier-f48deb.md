@@ -1,13 +1,13 @@
 ---
 id: "f48deb"
 title: Set up Prettier
-status: todo
+status: done
 priority: none
 labels:
   - m0
   - tooling
 created_at: 2026-10-01T03:08:32.609Z
-updated_at: 2026-10-01T03:53:40.887Z
+updated_at: 2026-10-01T04:01:20.342Z
 blocked_by:
   - "201d66"
 ---
@@ -29,3 +29,11 @@ The Tailwind plugin itself isn't added here; it comes with Tailwind.
 **Docs:** design.md → Repo, tooling & gate (Prettier and the package.json sorting).
 
 **Done when:** `bun run format:check` passes; a deliberately misformatted file makes it fail; shuffling the keys of a `package.json` makes it fail, and `bun run format` puts them back in order.
+
+## Outcome
+
+- Prettier 3.9.9 and `prettier-plugin-packagejson` 3.0.2 (wraps `sort-package-json`), pinned exactly; `prettier.config.ts` uses Prettier's default style plus the plugin. `.prettierignore` skips `.moth/` and `bun.lock`.
+- `format` and `format:check` scripts; the whole repo formatted in this commit (docs tables aligned, `package.json` scripts sorted).
+- Verified: `format:check` passes; a misformatted file and a `package.json` with shuffled keys both fail it, and `format` restores the order.
+- `.vscode`: Prettier extension recommended; default formatter with format on save.
+- design.md → Repo, tooling & gate describes the format setup.
