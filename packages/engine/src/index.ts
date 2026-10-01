@@ -21,6 +21,22 @@ export {
 } from "./checks/playing-rules.ts";
 export { type Violation, ViolationSchema } from "./checks/violation.ts";
 export {
+  type ComposerContext,
+  ComposerContextSchema,
+  EMPTY_CONTEXT,
+  type Theme,
+  ThemeSchema,
+} from "./composer/context.ts";
+export {
+  assertNoDeniedNames,
+  DeniedNameError,
+  findDeniedNames,
+} from "./composer/denylist.ts";
+export {
+  buildComposerMessage,
+  COMPOSER_SYSTEM_PROMPT,
+} from "./composer/prompt.ts";
+export {
   TEXTURE_EXAMPLES,
   type TextureExample,
 } from "./composer/texture-examples.ts";

@@ -1,14 +1,14 @@
 ---
 id: "f59a19"
 title: Write the composer prompt and context
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - m1
   - prompts
 created_at: 2026-10-01T03:10:00.812Z
-updated_at: 2026-10-01T03:44:53.773Z
+updated_at: 2026-10-01T04:28:54.882Z
 blocked_by:
   - "a0ef75"
 ---
@@ -25,3 +25,12 @@ Define what the composer is told, and the one shape every chunk's input takes.
 **Docs:** design.md → Composition (prompt structure, context fields, what's cached); design.md → Invariants (how the denylist enforces invariant 3).
 
 **Done when:** the tests pass and the system prompt is stable across calls.
+
+## Outcome
+
+- `composer/context.ts`: `ComposerContextSchema` (steering note, previous header, previous bars as written, previous footer state, themes ≤5, roadmap, summary) and `EMPTY_CONTEXT`. Chunk length stays a per-call option.
+- `composer/prompt.ts`: `COMPOSER_SYSTEM_PROMPT` (role, musical rules, plan-first, the grid format as a reference, texture examples by label and grid only, raw-grid-only output) and `buildComposerMessage(context, { bars })`. A fresh piece asks Claude to choose key, meter, tempo, mood and first theme.
+- `composer/denylist.ts`: well-known composers plus adjectival forms, cited composers, titles, opus/catalogue numbers; accent- and case-insensitive. Runs at runtime on the system prompt (at module load) and on every assembled message (throws `DeniedNameError`).
+- System prompt: 8,200 characters, about 2,300 tokens by a character estimate, likely below Opus's minimum cacheable length on its own. Recorded as a risk; the smoke test measures it and the revise ticket's second breakpoint (on the user message) lengthens the cached prefix.
+- 31 tests: denylist hits (names, adjectives, accents, titles, opus/BWV) and non-hits (ordinary steering, "unravel", grid text), every cited composer caught; system prompt contents, no names, raw-output rule, no per-chunk content; message assembly for empty and full contexts, omitted sections, and refusals for cited, uncited and adjectival composer names, opus numbers and a summary naming a composer.
+- design.md → Composition (prompt, context, denylist), Invariants, Risks.
