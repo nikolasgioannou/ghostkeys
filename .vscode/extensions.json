@@ -1,6 +1,8 @@
 {
   // Extensions for the repo's tools.
   "recommendations": [
+    // Lints with the repo's eslint.config.ts (loaded through jiti).
+    "dbaeumer.vscode-eslint",
     // Formats on save with the repo's Prettier config.
     "esbenp.prettier-vscode",
     // Runs and debugs the Vitest suite from the Testing view.

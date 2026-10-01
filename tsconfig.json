@@ -2,5 +2,9 @@
   // Root-level config files (vitest.config.ts and friends). Packages have
   // their own tsconfig.json; the root typecheck script runs both.
   "extends": "./tsconfig.base.json",
+  // These files run on Node (ESLint loads its config through jiti).
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["*.ts"]
 }

@@ -130,7 +130,7 @@ ghostkeys/
 - **Tool versions:** mise (`mise.toml`) pins Bun (1.4.2), Node (24) and Moth (0.5.0). Node is pinned because tools such as ESLint, Prettier and the editor extensions run with Node shebangs. A fresh clone's `mise.toml` must be trusted (`mise trust`) before mise uses it.
 - **Root package:** `private`, ESM, workspaces `apps/*` and `packages/*`. `bun.lock` (text) appears with the first dependency and is committed; installs use `--frozen-lockfile`.
 - **Format:** Prettier 3.9 with its default style, configured in `prettier.config.ts`. `prettier-plugin-packagejson` (via `sort-package-json`) keeps every `package.json` in a standard key order, scripts alphabetical. `.prettierignore` skips `.moth/` (Moth writes those files) and `bun.lock`. `bun run format` / `format:check`. The Tailwind plugin joins with Tailwind and must stay last in `plugins`.
-- **Lint:** ESLint 10 (flat `eslint.config.ts`, typescript-eslint `strictTypeChecked`, `@eslint-react` because the classic React plugin doesn't support ESLint 10, react-hooks, the TanStack Router plugin, `eslint-plugin-better-tailwindcss` for correctness, `simple-import-sort`, `eslint-config-prettier` last). One root config for the monorepo.
+- **Lint:** ESLint 10, one root flat config (`eslint.config.ts`, loaded through `jiti` because ESLint's native TypeScript config loading is still experimental). `@eslint/js` recommended, typescript-eslint `strictTypeChecked` and `stylisticTypeChecked` with `projectService`, `simple-import-sort` for imports and exports, and `eslint-config-prettier` last so ESLint never fights Prettier. The web app adds `@eslint-react`, react-hooks, the TanStack Router plugin and `eslint-plugin-better-tailwindcss`. `bun run lint` / `lint:fix`. The root `tsconfig.json` gives root config files Node's types.
 - **Tests:** Vitest, run under Bun (see Testing). A root `tsconfig.json` typechecks root-level config files; the root `typecheck` runs it and every workspace's.
 - **The gate:** a lefthook pre-commit hook runs Prettier on staged files, then `bun run check` (moth check → format check → ESLint → typecheck → tests → build). commitlint checks the message.
 - **AGENTS.md:** the working rules for people and coding agents. There is deliberately no `CLAUDE.md`: Claude Code reads AGENTS.md natively, but only when no CLAUDE.md exists ([research/06](research/06-workflow-conventions.md)).
@@ -184,7 +184,7 @@ These are load-bearing. Changing one means revisiting the design with the user, 
 3. **Original themes only.** No composer-imitation prompts; example excerpts are always behind a copy check.
 4. **The music never stops.** Playback never stalls; if generation falls behind, the fallback is musical, not silence.
 5. **One schema source.** Every cross-boundary shape is a Zod schema in the engine; no hand-written duplicate types.
-6. **The engine is framework-free.** `packages/engine` never imports React, TanStack or the database.
+6. **The engine is framework-free.** `packages/engine` never imports React, TanStack or the database. Enforced by lint: the engine can't import UI, framework or database packages, read `process.env`, or use browser globals.
 
 ## Grid format
 
