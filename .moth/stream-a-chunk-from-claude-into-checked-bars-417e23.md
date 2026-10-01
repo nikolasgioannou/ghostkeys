@@ -1,14 +1,14 @@
 ---
 id: "417e23"
 title: Stream a chunk from Claude into checked bars
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - llm
   - m1
 created_at: 2026-10-01T03:10:00.930Z
-updated_at: 2026-10-01T03:44:53.871Z
+updated_at: 2026-10-01T04:31:27.014Z
 blocked_by:
   - "a017f1"
   - "bd31a0"
@@ -31,3 +31,11 @@ The composer's first half: one call turns a `ComposerContext` into a stream of p
 **Docs:** design.md → Composition; design.md → Stream events (bar and chunk-complete events, the playability rule).
 
 **Done when:** the mock tests pass and a test proves every bar event equals the parse of the model's text.
+
+## Outcome
+
+- `composer/events.ts`: `ComposerEventSchema` (`item` with per-bar violations, `chunk-complete`, `chunk-failed`), usage and timings schemas.
+- `composer/check-all.ts`: `checkArrivingBar` (a bar's playing rules, its harmony, any copy it completes) and `checkComposedChunk` (all chunk checks plus a footer denylist check worded by field).
+- `composer/compose.ts`: `composeChunk({ model, context, bars, effort, maxOutputTokens?, abortSignal?, now? })` via `streamText`: 1-hour cache breakpoint on the system prompt, adaptive thinking (display omitted), 32k output tokens, `streamRetries: 0`, abort. Exported from `@ghostkeys/engine/llm` only; the browser bundle of the main entry still has no AI SDK code.
+- 7 tests with `MockLanguageModelV4`: a valid chunk (items equal a direct parse, no violations, usage mapped including cache reads and reasoning tokens, timings ordered); bars exactly as written; a bad bar's violation attached with no edit; a footer naming a composer flagged without the name; `length` and `content-filter` finishes as `chunk-failed`; abort mid-stream ends with no final event; the request (32k tokens, effort, adaptive thinking, cached system prompt, user message).
+- design.md → Composition (composing a chunk) and Stream events (composer events, the playability rule).

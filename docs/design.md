@@ -56,6 +56,8 @@ The composition pipeline, from the research (pending confirmation by the bake-of
 
 Claude sees only each example's texture label and grid. The citation (composer, work, bars, source URL, licence) stays in the engine's data and never reaches a prompt (invariant 3). Every example parses, breaks no playing rule and has no hard harmony violation; the tests hold them to that. The planning research suggested a chorale and a syncopated inner voice too, but the Mutopia editions of those textures that are marked public domain didn't transcribe cleanly from MIDI, so the set is three for now.
 
+**Composing a chunk** (`composeChunk`, from `@ghostkeys/engine/llm`). One `streamText` call: the cached system prompt (a 1-hour cache breakpoint), the user message, adaptive thinking with the reasoning hidden, the effort and chunk length given by the caller, `maxOutputTokens` of 32,000 (thinking counts against it), `streamRetries: 0` (a retried stream would re-emit bars), no assistant prefill, and an abort signal. Text deltas go through `parseGridStream`; each item is emitted as it completes, and each bar arrives with what can be checked at once (`checkArrivingBar`: its playing rules, its harmony, and any copy it completes). When the stream ends, the whole chunk is checked (`checkComposedChunk`: playing rules, harmony, copies, and no composer or work names in the footer text, flagged by field so the revise message doesn't repeat the name) and `chunk-complete` carries the items, violations, raw text, token usage (including cache reads and writes) and timings. A finish other than `stop` (`length`, a refusal, an error) is `chunk-failed`, never a normal end. An abort stops it without a final event.
+
 **The prompt** (`composer/prompt.ts`). The **system prompt** (`COMPOSER_SYSTEM_PROMPT`) is fixed: the role (a pianist-composer improvising one endless Romantic fantasia, a chunk at a time), the musical rules (themes return transformed, slow drift along the roadmap, playable hands, original themes only, composed transitions when steered), "plan first, then write", the grid format as a reference, and the texture examples (label and grid only). It contains nothing per-chunk, so it's cached; at about 8,200 characters (roughly 2,300 tokens by estimate) it may sit below Opus's minimum cacheable length on its own, which the smoke test measures. The **user message** (`buildComposerMessage(context, { bars })`) is assembled from a `ComposerContext` plus the call's chunk length: what to write next; for a fresh piece, a request that Claude choose the key, meter, tempo, mood and first theme (code never picks musical starting values); then the running summary, the theme bank, the roadmap, the steering note, and the previous chunk's header, last bars and footer state verbatim. Opus 5.5 has no assistant prefill, so the prompt asks for raw grid only, from `CHUNK` to `END`.
 
 **`ComposerContext`** (Zod, in the engine) is the one shape every chunk's input takes: steering note (conductor- or code-written idiom terms, never raw listener text), previous header, previous bars (`P` and `B` lines as written), previous footer state, theme bank (at most 5), roadmap, summary. An empty context is a fresh piece. Chunk length isn't in it; like effort, it's a per-call option.
@@ -375,6 +377,16 @@ What flows out of the composer, starting with what the grid parser emits. Schema
 | `parse-error`                                                                  | anything else, or a line out of order | the reason                                                                                                                                                                  |
 
 Blank lines and code fences yield nothing. A chord becomes one note per pitch at the same onset. Lines out of block order (a plan line after the bars, text after `END`) are parse errors; a missing `HOLD`, footer or `END` is left to the chunk-level checks.
+
+**Composer events** (`ComposerEventSchema`):
+
+| Event            | Carries                                                                          |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `item`           | one parser item as soon as its line completes; bars carry the per-bar violations |
+| `chunk-complete` | every item, every violation, the raw text, usage, timings                        |
+| `chunk-failed`   | why (`length`, `refusal`, `error`, `other`), the text so far, usage, timings     |
+
+**Playability rule:** a chunk is playable only after `chunk-complete`. `item` events before it are progress, not music; later tickets rely on this.
 
 ---
 

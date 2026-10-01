@@ -20,6 +20,7 @@ export {
   MAX_NOTES_PER_ONSET,
 } from "./checks/playing-rules.ts";
 export { type Violation, ViolationSchema } from "./checks/violation.ts";
+export { checkArrivingBar, checkComposedChunk } from "./composer/check-all.ts";
 export {
   type ComposerContext,
   ComposerContextSchema,
@@ -32,6 +33,14 @@ export {
   DeniedNameError,
   findDeniedNames,
 } from "./composer/denylist.ts";
+export {
+  type ChunkTimings,
+  ChunkTimingsSchema,
+  type ChunkUsage,
+  ChunkUsageSchema,
+  type ComposerEvent,
+  ComposerEventSchema,
+} from "./composer/events.ts";
 export {
   buildComposerMessage,
   COMPOSER_SYSTEM_PROMPT,
