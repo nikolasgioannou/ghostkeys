@@ -8,7 +8,7 @@ These are the rules for how work happens in this repo. What Ghostkeys is and how
 - Before starting a ticket, re-read it, the tickets it's blocked by, and the `docs/design.md` sections it points at. If things have moved on, update the ticket first, in the same commit as the work.
 - If a ticket conflicts with the principles below, raise it with the user instead of following it as written.
 - Claim a ticket with `moth move <id> in-progress`. Move it to `done` in the same commit as the work, and add an `## Outcome` section saying what was built.
-- One ticket per commit. The subject is a conventional type plus the ticket title in lowercase (e.g. `feat: parse the grid as it streams`), on a single line with no body. Filing tickets is its own `chore:` commit.
+- One ticket per commit. The subject is a conventional type plus the ticket title in lowercase (e.g. `feat: parse the grid as it streams`), on a single line with no body and no footer, so no attribution trailers either (commitlint rejects them; Claude Code's commit attribution is turned off). Filing tickets is its own `chore:` commit.
 - Tickets state outcomes and constraints and point at `docs/design.md` sections rather than copying details.
 
 ## Principles

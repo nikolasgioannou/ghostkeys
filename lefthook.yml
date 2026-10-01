@@ -8,3 +8,8 @@ pre-commit:
       stage_fixed: true
     - name: check
       run: bun run check
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: bunx commitlint --edit {1}
