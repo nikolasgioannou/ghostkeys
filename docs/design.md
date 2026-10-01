@@ -94,19 +94,19 @@ Answered by the bake-off:
 
 ## Stack
 
-| Layer             | Decision                                                                                                                                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Language          | **TypeScript everywhere**, with end-to-end type safety.                                                                                                                                               |
-| Runtime           | **Bun** (1.4), versions from mise.                                                                                                                                                                    |
-| Web framework     | **TanStack Start** (a release candidate on a Vite plugin; pin exact versions, it ships almost daily). Scripts run as `bun --bun vite …`.                                                              |
-| UI                | **React 19 + Tailwind CSS v4 + Base UI** (`@base-ui/react`). Tailwind is CSS-first (`@theme` tokens, a dark-only palette). Base UI is unstyled; its parts are styled with Tailwind `data-*` variants. |
-| Paper roll        | Canvas 2D.                                                                                                                                                                                            |
-| Audio             | Web Audio API and a sampled grand piano (chosen in the bake-off).                                                                                                                                     |
-| Client-only audio | The player renders only in the browser. The AudioContext is resumed on a user click (autoplay policy).                                                                                                |
-| Schemas           | **Zod 4**, the single source of truth for every shape that crosses a boundary (invariant 5).                                                                                                          |
-| Database          | **SQLite + Drizzle ORM** via `drizzle-orm/bun-sqlite`. It only works when Vite runs under `bun --bun` (and drizzle-kit likewise).                                                                     |
-| Claude            | **Vercel AI SDK 7** with **`@ai-sdk/anthropic`**, reaching Claude Opus 5.5 through **OpenRouter** (see Claude access).                                                                                |
-| TypeScript        | **Pinned to 6.0** (6.0.3): npm's `latest` is TypeScript 7 (the Go port), which typescript-eslint doesn't support yet.                                                                                 |
+| Layer             | Decision                                                                                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Language          | **TypeScript everywhere**, with end-to-end type safety.                                                                                                                                                                                  |
+| Runtime           | **Bun** (1.4), versions from mise.                                                                                                                                                                                                       |
+| Web framework     | **TanStack Start** (a release candidate on a Vite plugin; pin exact versions, it ships almost daily). Scripts run as `bun --bun vite …`.                                                                                                 |
+| UI                | **React 19 + Tailwind CSS v4 + Base UI** (`@base-ui/react`). Tailwind is CSS-first (`@theme` tokens, a dark-only palette). Base UI is unstyled; its parts are styled with Tailwind `data-*` variants.                                    |
+| Paper roll        | Canvas 2D.                                                                                                                                                                                                                               |
+| Audio             | Web Audio API and a sampled grand piano (chosen in the bake-off).                                                                                                                                                                        |
+| Client-only audio | The player renders only in the browser. The AudioContext is resumed on a user click (autoplay policy).                                                                                                                                   |
+| Schemas           | **Zod 4** (4.6.5, a dependency of the engine), the single source of truth for every shape that crosses a boundary (invariant 5). Types come from `z.infer`; TanStack Start and the AI SDK accept the schemas directly (Standard Schema). |
+| Database          | **SQLite + Drizzle ORM** via `drizzle-orm/bun-sqlite`. It only works when Vite runs under `bun --bun` (and drizzle-kit likewise).                                                                                                        |
+| Claude            | **Vercel AI SDK 7** with **`@ai-sdk/anthropic`**, reaching Claude Opus 5.5 through **OpenRouter** (see Claude access).                                                                                                                   |
+| TypeScript        | **Pinned to 6.0** (6.0.3): npm's `latest` is TypeScript 7 (the Go port), which typescript-eslint doesn't support yet.                                                                                                                    |
 
 ## Repo, tooling & gate
 
@@ -329,6 +329,24 @@ F theme A F5@0:24 Eb5@24:6 Db5@30:6
 F road Bbm:darker Gb:warmer Db:home
 END
 ```
+
+## Stream events
+
+What flows out of the composer, starting with what the grid parser emits. Schemas live in the engine (`GridItemSchema` in `grid/schema.ts`); later tickets add the composer's own events and the transport's.
+
+**Parser items.** The line parser (`createGridLineParser`) is an incremental state machine fed one complete line at a time; each line yields at most one item, as soon as the line is complete. Every item carries its `line` number and its `source` line exactly as Claude wrote it, so previous bars are carried forward as Claude's own text, never re-serialised.
+
+| Item                                                                           | From                                  | Carries                                                                                                                                                                     |
+| ------------------------------------------------------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`                                                                       | `CHUNK`                               | meter, tempo, key                                                                                                                                                           |
+| `plan`                                                                         | `P<n>`                                | bar, local key, chord (parsed Roman numeral), cadence, phrase end, dynamic, texture, motif use                                                                              |
+| `bar`                                                                          | `B<n>`                                | bar, body (right- and left-hand notes as MIDI numbers, pedal events, tempo marks) or, for a line that didn't parse, `body: null` plus the error, so it can still be revised |
+| `hold-start` / `hold-bar`                                                      | `HOLD` / `H<n>`                       | as `bar`                                                                                                                                                                    |
+| `footer-state`, `footer-summary`, `footer-theme`, `footer-drop`, `footer-road` | `F` lines                             | key, chord and pedal; summary text; a theme's notes per bar; a dropped theme; the roadmap stops                                                                             |
+| `end`                                                                          | `END`                                 | the chunk is complete                                                                                                                                                       |
+| `parse-error`                                                                  | anything else, or a line out of order | the reason                                                                                                                                                                  |
+
+Blank lines and code fences yield nothing. A chord becomes one note per pitch at the same onset. Lines out of block order (a plan line after the bars, text after `END`) are parse errors; a missing `HOLD`, footer or `END` is left to the chunk-level checks.
 
 ---
 
