@@ -1,13 +1,13 @@
 ---
 id: "09c97c"
 title: Bootstrap the Bun workspace monorepo
-status: todo
+status: done
 priority: none
 labels:
   - m0
   - tooling
 created_at: 2026-10-01T03:07:59.717Z
-updated_at: 2026-10-01T03:28:39.746Z
+updated_at: 2026-10-01T03:57:36.488Z
 blocked_by:
   - "53f225"
 ---
@@ -25,3 +25,9 @@ Turn the repo into a Bun workspaces monorepo that later tickets add packages to.
 **Docs:** design.md → Repo, tooling & gate (layout, workspaces), design.md → Stack (the mise pins).
 
 **Done when:** on a clean clone, `mise trust && mise install && bun install` succeeds and leaves `git status` clean.
+
+## Outcome
+
+- Root `package.json` (private, ESM, workspaces `apps/*` and `packages/*`), `mise.toml` pinning Bun 1.4.2, Node 24 and Moth 0.5.0, and a minimal `.gitignore`.
+- Checked with mise trusting the file for the session only (`MISE_TRUSTED_CONFIG_PATHS`): `mise install` installed nothing new and `bun install` left `git status` clean (no lockfile yet, as expected).
+- design.md → Repo, tooling & gate records the pins, the Node reason and the lockfile rule.

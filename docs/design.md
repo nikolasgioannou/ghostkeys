@@ -126,7 +126,8 @@ ghostkeys/
 ```
 
 - **Workspaces:** Bun workspaces (`apps/*`, `packages/*`). The engine is consumed as TypeScript source with no build step. A shared `tsconfig.base.json`; no project references; scripts run across workspaces with `bun --filter`.
-- **Tool versions:** mise (`mise.toml`) pins Bun, Node and Moth.
+- **Tool versions:** mise (`mise.toml`) pins Bun (1.4.2), Node (24) and Moth (0.5.0). Node is pinned because tools such as ESLint, Prettier and the editor extensions run with Node shebangs. A fresh clone's `mise.toml` must be trusted (`mise trust`) before mise uses it.
+- **Root package:** `private`, ESM, workspaces `apps/*` and `packages/*`. `bun.lock` (text) appears with the first dependency and is committed; installs use `--frozen-lockfile`.
 - **Lint and format:** ESLint 10 (flat `eslint.config.ts`, typescript-eslint `strictTypeChecked`, `@eslint-react` because the classic React plugin doesn't support ESLint 10, react-hooks, the TanStack Router plugin, `eslint-plugin-better-tailwindcss` for correctness, `simple-import-sort`, `eslint-config-prettier` last) and Prettier 3 (`prettier-plugin-packagejson`, `prettier-plugin-tailwindcss` for class order). One root config for the monorepo.
 - **Tests:** Vitest, run under Bun.
 - **The gate:** a lefthook pre-commit hook runs Prettier on staged files, then `bun run check` (moth check → format check → ESLint → typecheck → tests → build). commitlint checks the message.
