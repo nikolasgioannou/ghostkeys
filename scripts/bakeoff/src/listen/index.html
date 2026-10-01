@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ghostkeys bake-off</title>
+    <style>
+      body {
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+        margin: 2rem auto;
+        max-width: 40rem;
+        padding: 0 1rem;
+        background: #16130f;
+        color: #ece3d4;
+      }
+      button,
+      select {
+        font: inherit;
+        padding: 0.4rem 0.8rem;
+      }
+      #status {
+        color: #b8ab96;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bake-off listening</h1>
+    <p>
+      <label
+        >Run
+        <select id="run"></select
+      ></label>
+      <button id="play">Play session</button>
+      <button id="stop">Stop</button>
+    </p>
+    <p id="status">Pick a run and press Play.</p>
+    <script type="module" src="./listen.ts"></script>
+  </body>
+</html>

@@ -118,7 +118,10 @@ export async function runSession(options: SessionOptions): Promise<RunFile> {
             last.text,
             ...(last.reviseText === null ? [] : [last.reviseText]),
           ],
-          violationsBefore: checkComposedChunk(firstItems),
+          // Without a revise, the composer's own checks are the "before" (variant A checks differently).
+          violationsBefore: last.revised
+            ? checkComposedChunk(firstItems)
+            : last.violations,
           violationsAfter: last.violations,
           revised: last.revised,
           usage: last.usage,

@@ -4,12 +4,14 @@
   "type": "module",
   "scripts": {
     "bakeoff": "bun --env-file=../../.env src/bakeoff.ts",
+    "listen": "bun src/listen-server.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
     "@ghostkeys/engine": "workspace:*",
     "abcjs": "6.7.1",
     "ai": "7.0.126",
+    "smplr": "1.1.0",
     "zod": "4.6.5"
   },
   "devDependencies": {

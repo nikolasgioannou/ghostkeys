@@ -1,8 +1,10 @@
 {
-  // Runs on Bun, outside the engine.
+  // The runner runs on Bun; the listening page runs in the browser.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["bun"]
+    "types": ["bun"],
+    // The listening page runs in the browser.
+    "lib": ["ES2025", "DOM", "DOM.Iterable"]
   },
   "include": ["src"]
 }

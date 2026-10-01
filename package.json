@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "bakeoff": "bun run --cwd scripts/bakeoff bakeoff",
+    "bakeoff:listen": "bun run --cwd scripts/bakeoff listen",
     "check": "moth check && bun run format:check && bun run lint && bun run typecheck && bun run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
