@@ -106,7 +106,7 @@ Answered by the bake-off:
 | Schemas           | **Zod 4**, the single source of truth for every shape that crosses a boundary (invariant 5).                                                                                                             |
 | Database          | **SQLite + Drizzle ORM** via `drizzle-orm/bun-sqlite`. It only works when Vite runs under `bun --bun` (and drizzle-kit likewise).                                                                         |
 | Claude            | **Vercel AI SDK 7** with **`@ai-sdk/anthropic`**, reaching Claude Opus 5.5 through **OpenRouter** (see Claude access).                                                                                   |
-| TypeScript        | **Pinned to `~6.0`**: npm's `latest` is TypeScript 7 (the Go port), which typescript-eslint doesn't support yet.                                                                                         |
+| TypeScript        | **Pinned to 6.0** (6.0.3): npm's `latest` is TypeScript 7 (the Go port), which typescript-eslint doesn't support yet.                                                                                    |
 
 ## Repo, tooling & gate
 
@@ -125,7 +125,8 @@ ghostkeys/
 └── package.json        Bun workspaces root
 ```
 
-- **Workspaces:** Bun workspaces (`apps/*`, `packages/*`). The engine is consumed as TypeScript source with no build step. A shared `tsconfig.base.json`; no project references; scripts run across workspaces with `bun --filter`.
+- **Workspaces:** Bun workspaces (`apps/*`, `packages/*`). The engine is consumed as TypeScript source with no build step. No project references; scripts run across workspaces with `bun --filter`.
+- **TypeScript:** pinned exactly (6.0.3). `tsconfig.base.json` holds the shared options: target and lib ES2025, no ambient `types` (each package opts into the globals it runs with), bundler resolution with `.ts` imports, `verbatimModuleSyntax`, `noEmit`, and strictness beyond `strict` (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`). Each package's `tsconfig.json` extends it and has a `typecheck` script; the root `typecheck` runs them all. The engine adds only the DOM lib (for `fetch` and `AbortSignal`) and no Bun or Node types, because it runs in the browser too.
 - **Tool versions:** mise (`mise.toml`) pins Bun (1.4.2), Node (24) and Moth (0.5.0). Node is pinned because tools such as ESLint, Prettier and the editor extensions run with Node shebangs. A fresh clone's `mise.toml` must be trusted (`mise trust`) before mise uses it.
 - **Root package:** `private`, ESM, workspaces `apps/*` and `packages/*`. `bun.lock` (text) appears with the first dependency and is committed; installs use `--frozen-lockfile`.
 - **Lint and format:** ESLint 10 (flat `eslint.config.ts`, typescript-eslint `strictTypeChecked`, `@eslint-react` because the classic React plugin doesn't support ESLint 10, react-hooks, the TanStack Router plugin, `eslint-plugin-better-tailwindcss` for correctness, `simple-import-sort`, `eslint-config-prettier` last) and Prettier 3 (`prettier-plugin-packagejson`, `prettier-plugin-tailwindcss` for class order). One root config for the monorepo.
@@ -180,6 +181,13 @@ These are load-bearing. Changing one means revisiting the design with the user, 
 4. **The music never stops.** Playback never stalls; if generation falls behind, the fallback is musical, not silence.
 5. **One schema source.** Every cross-boundary shape is a Zod schema in the engine; no hand-written duplicate types.
 6. **The engine is framework-free.** `packages/engine` never imports React, TanStack or the database.
+
+
+## Grid format
+
+The notation Claude composes in. The full specification comes with the grid-format ticket; this section starts with what's built.
+
+- **Pitches** are scientific pitch notation: an uppercase letter A–G, an optional single `#` or `b`, and an octave 0–8, ASCII only. C4 is middle C (MIDI 60). Accidentals may cross octave lines (`Cb4` is B3). The piano's range is A0–C8 (MIDI 21–108). Engine: `pitchToMidi`, `midiToPitch`, `isOnPiano`.
 
 ---
 

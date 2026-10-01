@@ -1,0 +1,9 @@
+{
+  // The engine runs in the browser and on the server, so it gets no Bun or
+  // Node types. DOM is here only for fetch and AbortSignal.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2025", "DOM"]
+  },
+  "include": ["src"]
+}

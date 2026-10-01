@@ -1,0 +1,29 @@
+{
+  // Shared compiler options. Every package's tsconfig.json extends this file
+  // and adds its own environment (lib, types). Nothing is emitted: Bun and Vite
+  // run TypeScript directly. See docs/design.md → Repo, tooling & gate.
+  "compilerOptions": {
+    // Language level. No ambient types by default (TypeScript 6 default made explicit):
+    // each package opts into the globals it runs with.
+    "target": "ES2025",
+    "lib": ["ES2025"],
+    "types": [],
+
+    // Bundler-style resolution: packages export .ts source directly.
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    // Strictness.
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true
+  }
+}

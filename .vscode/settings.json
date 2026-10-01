@@ -1,0 +1,8 @@
+{
+  // Project settings for the repo's tools; personal preferences (theme, font,
+  // autosave) belong in your user settings.
+
+  // Use the repo's TypeScript (pinned to 6.0), not the one bundled with VS Code.
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true
+}

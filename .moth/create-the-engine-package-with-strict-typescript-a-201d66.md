@@ -1,14 +1,14 @@
 ---
 id: "201d66"
 title: Create the engine package with strict TypeScript and pitch primitives
-status: todo
+status: done
 priority: none
 labels:
   - engine
   - m0
   - tooling
 created_at: 2026-10-01T03:07:59.922Z
-updated_at: 2026-10-01T03:14:21.470Z
+updated_at: 2026-10-01T03:59:36.565Z
 blocked_by:
   - "a9e075"
 ---
@@ -28,3 +28,12 @@ Create `packages/engine`, the framework-free heart of Ghostkeys (invariant 6), w
 **Docs:** design.md → Repo, tooling & gate (the TS pin and why, the flags, tsconfig layout); design.md → Stack.
 
 **Done when:** `bun run typecheck` passes, and the engine has no Bun or Node types available (using `Bun.file` in engine code fails to typecheck).
+
+## Outcome
+
+- TypeScript pinned exactly to 6.0.3 (TS 6.0 also makes `types` default to `[]`, `strict` default on, and adds the ES2025 target, so the base targets ES2025).
+- `tsconfig.base.json` with the strictness flags; `packages/engine` (`@ghostkeys/engine`, source export, `typecheck` script) whose tsconfig adds only the DOM lib; root `typecheck` runs every workspace.
+- `src/pitch.ts`: `pitchToMidi`, `midiToPitch` (sharp or flat spelling), `isOnPiano`, and the A0/C8 constants.
+- `.vscode/settings.json` points VS Code at the workspace TypeScript.
+- `bun.lock` committed; `scripts/setup.sh` still passes. Verified: typecheck passes, and `Bun.file` in engine code fails to typecheck.
+- design.md: Repo, tooling & gate (TypeScript), Stack row, and a new Part 3 → Grid format section with the pitch notation.

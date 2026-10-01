@@ -2,5 +2,14 @@
   "name": "ghostkeys",
   "private": true,
   "type": "module",
-  "workspaces": ["apps/*", "packages/*"]
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "bun --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
 }
