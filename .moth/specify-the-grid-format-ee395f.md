@@ -1,14 +1,14 @@
 ---
 id: "ee395f"
 title: Specify the grid format
-status: todo
+status: done
 priority: none
 labels:
   - docs
   - engine
   - m1
 created_at: 2026-10-01T03:09:16.686Z
-updated_at: 2026-10-01T03:14:21.602Z
+updated_at: 2026-10-01T04:10:24.055Z
 blocked_by:
   - "2c06c7"
 ---
@@ -32,3 +32,8 @@ Include one complete worked chunk of about 4 bars, with a chord, a triplet, a ti
 **Docs:** design.md → Grid format (new section in Part 3); design.md → Open questions keeps "grid resolution" open until the bake-off.
 
 **Done when:** the spec answers every question the parser and checker tickets need, and the worked example follows it exactly.
+
+## Outcome
+
+- design.md → Grid format (Part 3) now specifies: the block order (`CHUNK` → `P` plan lines → `B` bar lines → `HOLD`/`H` → `F` footer → `END`, one item per line; `END` detects truncation); 12 slots per quarter (provisional); plan lines (local key, a defined Roman-numeral grammar incl. secondary dominants, borrowed chords, N6 and augmented sixths, cadences/phrase ends, dynamics with hairpins, texture, motif + transformation); bar lines (`R:`/`L:` notes as `pitch@onset:duration`, chords with `+`, ties with `~`, implied rests, the melody rule with `!` override, `ped:` and `t:` sections); the holding pattern and what "loops cleanly" means; the footer (key/chord/pedal, summary, themes as literal notes — the briefs differed, literal notes won so returns are real — capped at 5, the roadmap); the revise reply; hard vs soft checker rules; and a complete worked 4-bar example.
+- Grid resolution stays in Open questions until the bake-off. Tokens per bar get measured with the texture examples.

@@ -188,9 +188,147 @@ These are load-bearing. Changing one means revisiting the design with the user, 
 
 ## Grid format
 
-The notation Claude composes in. The full specification comes with the grid-format ticket; this section starts with what's built.
+The notation Claude composes in. Every part of the composer pipeline reads it: the schemas, parser, checkers, prompt, texture examples, saved chunks and the paper roll. It's drafted from the research ([01](research/01-llm-music-generation.md), [02](research/02-how-llms-compose-best.md)): explicit onset slots instead of ABC's running durations, a plan before the notes, and one line per bar so code can check each bar the moment it arrives. The bake-off validates it, and the user tweaks it at the end.
 
-- **Pitches** are scientific pitch notation: an uppercase letter A–G, an optional single `#` or `b`, and an octave 0–8, ASCII only. C4 is middle C (MIDI 60). Accidentals may cross octave lines (`Cb4` is B3). The piano's range is A0–C8 (MIDI 21–108). Engine: `pitchToMidi`, `midiToPitch`, `isOnPiano`.
+### Shape
+
+A chunk is plain text, one item per line, in this order:
+
+1. one `CHUNK` header line;
+2. one `P` plan line per bar, for every bar, before any notes;
+3. one `B` bar line per bar;
+4. a `HOLD` line, then 2–4 `H` holding-pattern bar lines;
+5. `F` footer lines;
+6. an `END` line.
+
+Every item is complete at the end of its line, so the parser emits each one as soon as its newline arrives, and a missing `END` means the chunk was cut off. Blank lines and Markdown code fences are ignored; any other line that doesn't fit the grammar is a parse error (reported with its line number, never a crash). Tokens are separated by single spaces.
+
+### Header
+
+```
+CHUNK meter=3/4 tempo=66 key=Db
+```
+
+- `meter`: beats/beat-unit, e.g. `3/4`, `4/4`, `6/8`, `2/2`.
+- `tempo`: quarter notes per minute (a quarter is always 12 slots, whatever the meter).
+- `key`: a tonic (pitch letter and optional `#`/`b`) plus `m` for minor: `Db`, `Bbm`, `F#m`.
+
+### Time: onset slots
+
+Time inside a bar is counted in **slots, 12 per quarter note**, so 16ths (3 slots), eighth-note triplets (4) and 16th-note triplets (2) are all whole numbers. A bar has `numerator × 48 / denominator` slots: 48 in 4/4, 36 in 3/4 and in 6/8, 24 in 2/4. The resolution is provisional until the bake-off.
+
+### Plan lines
+
+```
+P1 key=Db I dyn=p tex=nocturne-arp motif=A
+P4 key=Db V7 cad=HC dyn=mp>
+```
+
+`P<bar>`, then in any order:
+
+- `key=` the bar's local key (same syntax as the header). Required, so every bar describes where the music is and any bar boundary can be continued from.
+- **A Roman numeral** (required), relative to the bar's local key:
+  - degree `I`–`VII` (major quality) or `i`–`vii` (minor), optionally prefixed `b` or `#` for chromatic roots (`bVI`, `#iv`);
+  - optional quality `o` (diminished), `h` (half-diminished, with 7) or `+` (augmented);
+  - optional figures: `6`, `64` (triads), `7`, `65`, `43`, `42` (sevenths), `maj7`;
+  - optional secondary target: `/V`, `/ii`, …;
+  - or one of the named chords `N6` (Neapolitan), `It6`, `Fr6`, `Ger6` (augmented sixths).
+  - Examples: `I`, `vi`, `V7`, `V65/V`, `viio7`, `iih7`, `bVI`, `iv6`, `N6`, `Ger6`.
+- `cad=` `PAC`, `IAC`, `HC`, `DC` or `PC` when the bar ends a phrase with that cadence; `end` marks a phrase end without a cadence label.
+- `dyn=` `pp`, `p`, `mp`, `mf`, `f` or `ff`, optionally followed by `<` (crescendo through the bar) or `>` (diminuendo). Required on the first plan line of a chunk; a bar without one continues the previous dynamic.
+- `tex=` the texture idiom, a short tag such as `nocturne-arp`, `chorale`, `waltz`, `alberti`, `block`, `octaves`, `sync-inner`, `melody-alone`.
+- `motif=` a theme from the theme bank and how it's used: `A`, or `A:` plus one of `orig`, `frag`, `seq`, `inv`, `aug`, `dim`, `reharm`, `minor`, `major`.
+
+### Bar lines
+
+```
+B1 R: F5@0:24 Eb5@24:6 Db5@30:6 | L: Db2@0:6 Ab2@6:6 F3@12:6 Ab3@18:6 Db4@24:6 Ab3@30:6 | ped: c0
+```
+
+`B<bar>`, then sections separated by `|`:
+
+- `R:` the right hand's notes and `L:` the left hand's, both required (an empty hand is written `R: -`).
+- A **note** is `pitch@onset:duration`, in slots: `F5@0:24` starts at the downbeat and lasts a half note in 3/4. Pitches use the engine's notation (below). Notes in a hand are listed in onset order.
+- A **chord** joins pitches with `+`: `Db5+Gb5+Bb5@0:24`.
+- **Ties:** a note ending in `~` continues into the next bar, where the same hand must start the same pitch at slot 0 (`Ab5@24:12~`, then `Ab5@0:12`). Otherwise a note must end within its bar: onset + duration ≤ bar length.
+- **Rests** are implied by gaps; there are no rest tokens.
+- **Melody:** the highest right-hand note at each onset is the melody. Mark a note with a trailing `!` to put the melody somewhere else (an inner or left-hand voice).
+- `ped:` (optional) sustain-pedal events: `v<slot>` down, `^<slot>` up, `c<slot>` change (up then straight back down). The pedal state carries from bar to bar until changed.
+- `t:` (optional) tempo marks: `rit` (slow through the bar), `atempo` (back to the chunk's tempo at the bar's start), `q=NN` (a new tempo from the bar's start), `fermata@<slot>` (hold at that slot).
+
+### Holding pattern
+
+```
+HOLD
+H1 R: Gb5@0:12 F5@12:12 Eb5@24:12 | L: Ab1@0:6 Eb2@6:6 C3@12:24 | ped: c0
+H2 R: Eb5@0:24 C5@24:12 | L: Ab1@0:6 Eb2@6:6 Gb2@12:24 | ped: c0
+```
+
+2–4 bars, written like bar lines with `H<n>`, in the chunk's final meter and key. It's the musical safety net (invariant 4): if the next chunk is late, playback loops it. It must loop cleanly: whole bars; it continues from the chunk's last bar and its last bar leads back into its first; no ties out of its last bar; pedal up by its end or changed at its start.
+
+### Footer
+
+```
+F key=Db chord=V7 ped=down
+F sum The nocturne opens in Db: theme A sung over wide arpeggios, rising to a half cadence.
+F theme A F5@0:24 Eb5@24:6 Db5@30:6
+F road Bbm:darker Gb:warmer Db:home
+```
+
+- `F key=… chord=… ped=down|up` (required): where the chunk ends (key, last chord as a Roman numeral, pedal state). The next chunk continues from it.
+- `F sum <text>` (required): one sentence updating the running summary.
+- `F theme <name> <notes>`: adds or replaces a theme in the theme bank. A theme is **literal notes**, one or two bars of right-hand note tokens (`/` between bars), in the chunk's meter and key; Claude transforms it when it returns. `F drop <name>` removes one. The bank holds at most 5 themes.
+- `F road <key>:<mood> …`: the next 2–4 key areas and moods (the roadmap). Claude writes it; code never plans the music.
+
+### Revise reply
+
+When checks fail, the revise turn answers with only what it corrects, in the same syntax: the corrected `P` and `B` lines (same bar numbers), the `HOLD` block if the holding pattern was flagged, `F` lines if the footer was flagged, then `END`. Everything not repeated stands.
+
+### Checker rules
+
+**Hard** (always revised):
+
+- parse errors; a bar without a plan line, or bar numbers out of sequence; a missing `HOLD` block, footer `key=` line or `END`;
+- an onset outside the bar; a note running past the barline without a tie; a tie with no matching note at slot 0 of the next bar;
+- a pitch outside A0–C8;
+- more than 5 notes in one hand at one onset; one hand's notes at the same onset spanning more than a major 10th (16 semitones; wide arpeggios across onsets are fine);
+- no `dyn=` on the chunk's first plan line;
+- a holding pattern that doesn't loop (above);
+- a copy of a texture example, or a composer or work name in the footer.
+
+**Soft** (revised only above a threshold): notes that don't fit the bar's planned harmony (non-chord tones on strong slots beyond a share of the bar).
+
+### Token budget
+
+Generation has to keep ahead of playback, so the syntax is short: no rest tokens, durations in slots, one line per bar. Tokens per bar are measured on the texture examples once they exist; the research estimated 1–2k output tokens per minute of music for a compact format.
+
+### Pitches
+
+Scientific pitch notation: an uppercase letter A–G, an optional single `#` or `b`, and an octave 0–8, ASCII only. C4 is middle C (MIDI 60). Accidentals may cross octave lines (`Cb4` is B3). The piano's range is A0–C8 (MIDI 21–108). Engine: `pitchToMidi`, `midiToPitch`, `isOnPiano`.
+
+### Worked example
+
+Four bars in 3/4, D-flat major, with a chord, a triplet, a tie, pedal, a ritardando, the holding pattern and the footer. It's the parser's first test fixture.
+
+```
+CHUNK meter=3/4 tempo=66 key=Db
+P1 key=Db I dyn=p tex=nocturne-arp motif=A
+P2 key=Db vi tex=nocturne-arp motif=A:seq
+P3 key=Db IV dyn=mp< tex=nocturne-arp
+P4 key=Db V7 cad=HC dyn=mp> tex=nocturne-arp
+B1 R: F5@0:24 Eb5@24:6 Db5@30:6 | L: Db2@0:6 Ab2@6:6 F3@12:6 Ab3@18:6 Db4@24:6 Ab3@30:6 | ped: c0
+B2 R: Db5@0:12 C5@12:4 Db5@16:4 Eb5@20:4 F5@24:12 | L: Bb1@0:6 F2@6:6 Db3@12:6 F3@18:6 Bb3@24:12 | ped: c0
+B3 R: Db5+Gb5+Bb5@0:24 Ab5@24:12~ | L: Gb1@0:6 Db2@6:6 Bb2@12:6 Db3@18:6 Gb3@24:12 | ped: c0
+B4 R: Ab5@0:12 Gb5@12:12 Eb5@24:12 | L: Ab1@0:6 Eb2@6:6 C3@12:6 Gb3@18:6 Ab3@24:12 | ped: c0 | t: rit
+HOLD
+H1 R: Gb5@0:12 F5@12:12 Eb5@24:12 | L: Ab1@0:6 Eb2@6:6 C3@12:24 | ped: c0
+H2 R: Eb5@0:24 C5@24:12 | L: Ab1@0:6 Eb2@6:6 Gb2@12:24 | ped: c0
+F key=Db chord=V7 ped=down
+F sum The nocturne opens in Db: theme A sung over wide arpeggios, rising to a half cadence.
+F theme A F5@0:24 Eb5@24:6 Db5@30:6
+F road Bbm:darker Gb:warmer Db:home
+END
+```
 
 ---
 
