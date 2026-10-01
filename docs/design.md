@@ -138,7 +138,7 @@ ghostkeys/
 - **Tickets:** [Moth](https://github.com/nikolasgioannou/moth), pinned in `mise.toml` and configured by `moth.config.yml` (statuses backlog, todo, in-progress, done, canceled, duplicate). Tickets live flat in `.moth/`. Labels: one milestone (`m0`…), area labels, and `collab` for work done with the user. Done tickets gain an `## Outcome` section. Tickets state outcomes and constraints and point at sections of this document rather than copying details. Every ticket that introduces a tool researches it first.
 - **`scripts/setup.sh`:** the one command after cloning. Check, then act, with ✓/→/✗ output; never installs global prerequisites (it fails with instructions); re-running it is a health check. Steps so far: mise present → `mise.toml` trusted → `mise install` → `bun install --frozen-lockfile` → git hooks installed. Any ticket that adds something contributors must set up extends it.
 - **`.vscode/`:** recommended extensions, the workspace TypeScript, format on save, ESLint fixes on explicit save, and the Tailwind entry stylesheet; generated files read-only.
-- **Git:** a public GitHub repo, `nikolasgioannou/ghostkeys`, with an MIT licence. No GitHub Actions and no deployment.
+- **Git:** a public GitHub repo, [nikolasgioannou/ghostkeys](https://github.com/nikolasgioannou/ghostkeys), branch `main`, with an MIT licence. Every commit is pushed. No GitHub Actions and no deployment.
 - **Secrets:** `.env` is gitignored from the first commit; `.env.example` documents the variables. The user pastes the OpenRouter key in themselves.
 
 ## Claude access
