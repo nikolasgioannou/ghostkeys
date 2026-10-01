@@ -64,6 +64,18 @@ export {
 export * from "./grid/schema.ts";
 export { parseGridStream } from "./grid/stream-parser.ts";
 export {
+  ACCENT_BEAT,
+  ACCENT_DOWNBEAT,
+  ACCOMPANIMENT_CUT,
+  humanize,
+  JITTER_SEC,
+  MELODY_BOOST,
+  PEDAL_LAG_SEC,
+  PHRASE_END_RUBATO,
+  ROLL_MIN_NOTES,
+  ROLL_STEP_SEC,
+} from "./performance/humanize.ts";
+export {
   DYNAMIC_VELOCITY,
   FERMATA_BEATS,
   HAIRPIN_VELOCITY,

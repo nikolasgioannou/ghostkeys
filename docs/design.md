@@ -86,7 +86,13 @@ The change is heard at the **next chunk boundary** (roughly 15–30 s). Music al
 - **A chunk plays only once it's complete** (checked and, if needed, revised). Bars that arrive before that are progress, not music.
 - **Timing** (`timeChunk`): parsed bars become timed bars: per bar its duration in seconds, its slot count, whether it ends a phrase, and its notes (MIDI pitch, offset and duration in seconds from the bar's start at its written tempo, velocity, hand, whether it's the melody, its onset slot) and pedal events (up/down; a change is up then down). Offsets are bar-relative, so a player can stretch the tempo or add rubato without recomputing anything; queued bars are never replaced. Tempo marks: `q=NN` sets the tempo from the bar's start, `atempo` returns to the chunk's tempo, `rit` slows the bar linearly to `RIT_END_FACTOR` (0.8) of its tempo by its end (that bar only), `fermata@<slot>` holds for `FERMATA_BEATS` (1) extra beat. A tie becomes one longer note; the continuation isn't struck again. The holding pattern is timed the same way.
 - **Dynamics → velocity** (`DYNAMIC_VELOCITY`): `pp` 36, `p` 48, `mp` 60, `mf` 72, `f` 88, `ff` 104. A hairpin moves the velocity by `HAIRPIN_VELOCITY` (12) across its bar, and the next bar starts where it ended; a bar without a dynamic continues the current one.
-- **Realism:** velocity from dynamics, metric accents and melody weighting; small onset jitter; rolled chords; phrase-end rubato; sustain pedal.
+- **Humanization** (`humanize(bars, seed)`), on top of the timed bars. Deterministic: the seed is the chunk's index, and each bar's randomness comes from it and the bar number, so a replay or resume sounds identical. Every amount is a named constant:
+  - metric accents: `ACCENT_DOWNBEAT` (+6) on the downbeat, `ACCENT_BEAT` (+3) on other quarter-note beats;
+  - the melody sings: `MELODY_BOOST` (+10) on melody notes, `ACCOMPANIMENT_CUT` (−4) on the rest;
+  - onset jitter of up to `JITTER_SEC` (12 ms) either way, never before the bar;
+  - rolled chords: in a chord of `ROLL_MIN_NOTES` (3) or more in one hand, each note above the lowest sounds `ROLL_STEP_SEC` (12 ms) later;
+  - phrase-end rubato: a bar ending a phrase slows progressively, its local tempo `PHRASE_END_RUBATO` (8%) slower by the end, so the bar lasts about 4% longer;
+  - pedal: at a change, the pedal goes back down `PEDAL_LAG_SEC` (40 ms) after it comes up, clearing the old harmony.
 - **Safety net** (invariant 4): if the next chunk is late, playback first stretches the tempo slightly (up to about 10%), then loops the current chunk's holding pattern with a gentle fade, and leaves it at a bar boundary the moment the next chunk is ready.
 - **Pause** stops playback. Once the buffer is full, generation stops too.
 
