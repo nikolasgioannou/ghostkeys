@@ -1,6 +1,6 @@
 /**
- * Scientific pitch notation: an uppercase letter A–G, an optional single
- * accidental (`#` or `b`), and an octave 0–8. C4 is middle C, MIDI 60.
+ * Scientific pitch notation: an uppercase letter A–G, an optional accidental
+ * (`#`, `b`, or the double `##` or `bb`), and an octave 0–8. C4 is middle C, MIDI 60.
  * ASCII only. The grid format writes every pitch this way.
  */
 
@@ -9,7 +9,7 @@ export const PIANO_LOWEST_MIDI = 21;
 /** The highest key on a piano, C8. */
 export const PIANO_HIGHEST_MIDI = 108;
 
-const PITCH_PATTERN = /^([A-G])([#b]?)([0-8])$/;
+const PITCH_PATTERN = /^([A-G])(##|bb|[#b]?)([0-8])$/;
 
 const LETTER_SEMITONES: Record<string, number> = {
   C: 0,
@@ -53,14 +53,15 @@ const FLAT_NAMES = [
 /**
  * The MIDI number of a pitch such as `C4`, `F#3` or `Bb5`, or `null` if the
  * text isn't valid pitch notation. Accidentals may cross octave lines:
- * `Cb4` is B3 (59) and `B#3` is C4 (60).
+ * `Cb4` is B3 (59), `B#3` is C4 (60) and `Bbb2` is A2 (45).
  */
 export function pitchToMidi(pitch: string): number | null {
   const match = PITCH_PATTERN.exec(pitch);
   if (!match) return null;
   const [, letter = "", accidental, octave = ""] = match;
   const semitone = LETTER_SEMITONES[letter] ?? 0;
-  const shift = accidental === "#" ? 1 : accidental === "b" ? -1 : 0;
+  const shift =
+    { "": 0, "#": 1, b: -1, "##": 2, bb: -2 }[accidental ?? ""] ?? 0;
   return (Number(octave) + 1) * 12 + semitone + shift;
 }
 

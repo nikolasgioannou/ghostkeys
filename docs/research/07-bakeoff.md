@@ -46,6 +46,15 @@ The pass bar was a steady-state RTF of about 0.6 or lower.
 
 **Answer:** use low effort and 16-bar chunks. If the grid variants are kept, variant C's revise turn is the only place without much margin. It could be limited to hard violations (soft harmony on its own then doesn't trigger a revise) to win some time back.
 
+## Timings for failure handling
+
+The run files are deleted with the bake-off workspace, so these are the numbers the failure-recovery limits will be set from:
+
+- **Time to the first visible token at `low` effort:** median 1.7 s, range 0.9–29.1 s, over 28 chunks. The long tail is thinking before the first token.
+- **Time to the first visible token at `medium` effort:** 30.7–38.6 s.
+- **A revise turn:** 3.2–14.4 s, median 7.9 s, over 11 revises.
+- **A whole chunk:** 17–37 s at 16 bars and 18–24 s at 8 bars, revise included.
+
 ## What the checks caught
 
 - **Copy check:** nothing in any run. No melody or bass line came close to the texture examples at `COPY_MIN_STEPS`, so the thresholds stay as they are.

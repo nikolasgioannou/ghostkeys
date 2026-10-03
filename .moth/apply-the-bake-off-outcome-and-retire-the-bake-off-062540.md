@@ -1,14 +1,14 @@
 ---
 id: "062540"
 title: Apply the bake-off outcome and retire the bake-off code
-status: todo
+status: done
 priority: none
 labels:
   - bakeoff
   - engine
   - m2
 created_at: 2026-10-01T03:10:49.719Z
-updated_at: 2026-10-01T03:29:53.965Z
+updated_at: 2026-10-03T18:12:02.580Z
 blocked_by:
   - "0d74ce"
 ---
@@ -24,3 +24,26 @@ Make the engine match the decision, then delete what the decision made unnecessa
 **Docs:** design.md → Composition, Grid format and Playback describe what's built now; design.md → Bake-off becomes a short historical note linking the results; design.md → Repo, tooling & gate no longer lists the workspace.
 
 **Done when:** no losing-variant code or dependency remains, the gate passes, and design.md describes the winning pipeline as the built one.
+
+## Outcome
+
+**The engine now runs with the bake-off's choices.**
+- `OPENING_BARS` (8), `STEADY_BARS` (16), `TURN_BARS` (8) and `DEFAULT_EFFORT` (`low`) are exported from `@ghostkeys/engine/llm`.
+- `composeChunk`'s `effort` is optional and defaults to `DEFAULT_EFFORT`.
+- Unchanged: revising stays on by default (the smoke test turns it off), and so do the resolution, the thresholds and the examples.
+
+**The grid format accepts Claude's habits.**
+- A `t:` or `ped:` section run on from the other without ` | `.
+- `cad=end` as a phrase end.
+- Double sharps and flats, in pitches and notes.
+- Roman-numeral accidentals counted from the major scale in either mode.
+- A soft `missing-end`.
+
+The prompt mentions the double accidentals and the accidental rule, and new tests cover each change.
+
+**A real chunk is kept.** `OPENING_CHUNK` (`grid/opening.fixture.ts`) is a 16-bar Ab-major opening Claude wrote in the bake-off, unrevised and clean. Its test checks the parse, that it passes every check, and its timing (about 45 s).
+
+**The bake-off is retired.**
+- The `scripts/bakeoff` workspace is deleted, with its dependencies (abcjs, smplr, @tonejs/piano, Tone), the root `bakeoff` scripts, the README row and the `.gitignore` entry. `scripts/*` stays as a workspace glob for the smoke test.
+- Before the run files went, the timings the failure-recovery ticket needs were recorded in docs/research/07-bakeoff.md.
+- design.md describes the built pipeline and format, and its Bake-off section is now a short historical note that keeps the pedal lesson for the app's player.

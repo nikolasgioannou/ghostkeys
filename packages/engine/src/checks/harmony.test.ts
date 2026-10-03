@@ -54,6 +54,11 @@ describe("chordPitchClasses", () => {
     ["VII", "Am", ["D", "G", "B"]],
     ["VI", "Am", ["C", "F", "A"]],
     ["IV", "Db", ["C#", "F#", "Bb"]],
+    ["bVI", "Fm", ["C#", "F", "Ab"]],
+    ["bIII", "Am", ["C", "E", "G"]],
+    ["bVII", "Am", ["D", "G", "B"]],
+    ["bII", "Am", ["D", "F", "Bb"]],
+    ["#iv", "Am", ["Eb", "F#", "Bb"]],
   ])("%s in %s", (roman, key, expected) => {
     expect(chord(roman, key)).toEqual(byPitchClass(expected));
   });

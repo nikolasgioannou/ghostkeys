@@ -230,6 +230,38 @@ describe("malformed input", () => {
   });
 });
 
+describe("Claude's habits", () => {
+  const header = "CHUNK meter=4/4 tempo=72 key=C";
+  const plan = "P1 key=C I dyn=p";
+
+  it("reads cad=end as a phrase end without a cadence", () => {
+    const [, item] = parseAll([header, "P1 key=C I cad=end"].join("\n"));
+    expect(item).toMatchObject({
+      type: "plan",
+      cadence: null,
+      phraseEnd: true,
+    });
+  });
+
+  it.each([
+    "B1 R: C5@0:48 | L: C3@0:48 | ped: c0 t: rit",
+    "B1 R: C5@0:48 | L: C3@0:48 | t: rit ped: c0",
+  ])("reads pedal and tempo run together: %s", (line) => {
+    const item = parseAll([header, plan, line].join("\n")).at(-1);
+    expect(item?.type === "bar" ? item.body : null).toMatchObject({
+      pedal: [{ kind: "change", slot: 0 }],
+      tempo: [{ kind: "rit" }],
+    });
+  });
+
+  it("reads a double flat", () => {
+    const item = parseAll(
+      [header, plan, "B1 R: C5@0:48 | L: Bbb2@0:48"].join("\n"),
+    ).at(-1);
+    expect(item?.type === "bar" ? item.body?.left[0]?.midi : null).toBe(45);
+  });
+});
+
 describe("parseRoman", () => {
   it.each([
     [

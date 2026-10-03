@@ -16,6 +16,15 @@ import { buildComposerMessage, COMPOSER_SYSTEM_PROMPT } from "./prompt.ts";
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 
+/** Chunk lengths in bars, chosen in the bake-off (docs/research/07-bakeoff.md). */
+export const OPENING_BARS = 8;
+export const STEADY_BARS = 16;
+/** The short turn spliced in after a steer (design.md → Steering). */
+export const TURN_BARS = 8;
+
+/** Low effort keeps generation at about 0.55–0.6× real time; medium was about 1.0×. */
+export const DEFAULT_EFFORT: Effort = "low";
+
 /** Thinking counts against the output limit, so leave plenty of room beyond the visible chunk. */
 export const DEFAULT_MAX_OUTPUT_TOKENS = 32_000;
 
@@ -25,10 +34,11 @@ export const REVISE_SOFT_MIN = 2;
 export interface ComposeChunkOptions {
   model: LanguageModel;
   context: ComposerContext;
-  /** How many bars to write. The caller decides (opening, post-steer or steady length). */
+  /** How many bars to write: `OPENING_BARS`, `STEADY_BARS` or `TURN_BARS`. */
   bars: number;
-  effort: Effort;
-  /** Make one revise turn when the checks fail (default true; the bake-off's variant B turns it off). */
+  /** Default `DEFAULT_EFFORT`. */
+  effort?: Effort;
+  /** Make one revise turn when the checks fail (default true; the smoke test turns it off). */
   revise?: boolean;
   maxOutputTokens?: number;
   abortSignal?: AbortSignal;
@@ -208,7 +218,7 @@ export async function* composeChunk(
       ...(options.abortSignal ? { abortSignal: options.abortSignal } : {}),
       providerOptions: {
         anthropic: {
-          effort: options.effort,
+          effort: options.effort ?? DEFAULT_EFFORT,
           thinking: { type: "adaptive", display: "omitted" },
         },
       },

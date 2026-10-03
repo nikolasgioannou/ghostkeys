@@ -1,8 +1,12 @@
 export {
   composeChunk,
   type ComposeChunkOptions,
+  DEFAULT_EFFORT,
   DEFAULT_MAX_OUTPUT_TOKENS,
   type Effort,
+  OPENING_BARS,
+  STEADY_BARS,
+  TURN_BARS,
 } from "../composer/compose.ts";
 export {
   type ClaudeConfig,

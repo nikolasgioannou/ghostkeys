@@ -57,7 +57,7 @@ P4 key=Db V7 cad=HC dyn=mp>
 
 P<bar>, then:
 - key= the bar's local key (required).
-- A Roman numeral relative to that key (required): I–VII major, i–vii minor; optional b or # before it (bVI); optional o (diminished), h (half-diminished, with a seventh) or + (augmented); optional figures 6, 64, 7, 65, 43, 42 or maj7; optional secondary target /V, /ii…; or one of N6, It6, Fr6, Ger6. Examples: I, vi, V7, V65/V, viio7, iih7, bVI, iv6, N6, Ger6. In minor, lowercase vii is the raised leading tone and uppercase VII the subtonic.
+- A Roman numeral relative to that key (required): I–VII major, i–vii minor; optional b or # before it, counted from the major scale in either key (bVI in C minor is Ab major); optional o (diminished), h (half-diminished, with a seventh) or + (augmented); optional figures 6, 64, 7, 65, 43, 42 or maj7; optional secondary target /V, /ii…; or one of N6, It6, Fr6, Ger6. Examples: I, vi, V7, V65/V, viio7, iih7, bVI, iv6, N6, Ger6. In minor, lowercase vii is the raised leading tone and uppercase VII the subtonic.
 - cad= PAC, IAC, HC, DC or PC when the bar ends a phrase with that cadence; end marks a phrase end without one.
 - dyn= pp, p, mp, mf, f or ff, optionally followed by < (crescendo) or > (diminuendo). Required on the first plan line; otherwise only when it changes.
 - tex= a short texture tag, e.g. nocturne-arp, chorale, waltz, alberti, block, octaves, inner-triplets, melody-alone.
@@ -69,7 +69,7 @@ B1 R: F5@0:24 Eb5@24:6 Db5@30:6 | L: Db2@0:6 Ab2@6:6 F3@12:6 Ab3@18:6 Db4@24:6 A
 
 B<bar>, then sections separated by " | ":
 - R: the right hand and L: the left hand, both required (an empty hand is R: -).
-- A note is pitch@onset:duration in slots. Pitches are a capital letter, an optional # or b, and an octave: C4 is middle C; the piano runs from A0 to C8. List each hand's notes in onset order.
+- A note is pitch@onset:duration in slots. Pitches are a capital letter, an optional #, b, ## or bb, and an octave: C4 is middle C; the piano runs from A0 to C8. List each hand's notes in onset order.
 - A chord joins pitches with +: Db5+Gb5+Bb5@0:24.
 - A note ending in ~ is tied into the next bar: it ends exactly at the barline, and the next bar's same hand starts the same pitch at slot 0 (Ab5@24:12~, then Ab5@0:12). Otherwise every note ends by the barline.
 - Rests are just gaps.

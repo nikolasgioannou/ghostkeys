@@ -321,15 +321,13 @@ export function checkChunk(items: GridItem[]): Violation[] {
       hard("missing-summary", chunk, null, "the footer has no `F sum` line."),
     );
   }
+  // Claude sometimes stops after a complete footer without writing END; a
+  // chunk that was really cut off also misses footer lines, which are hard.
   if (items.at(-1)?.type !== "end") {
-    violations.push(
-      hard(
-        "missing-end",
-        chunk,
-        null,
-        "doesn't finish with END (it was cut off).",
-      ),
-    );
+    violations.push({
+      ...hard("missing-end", chunk, null, "doesn't finish with END."),
+      severity: "soft",
+    });
   }
 
   // Each bar on its own, then ties across bars.

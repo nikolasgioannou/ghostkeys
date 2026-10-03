@@ -196,6 +196,13 @@ describe("checkChunk", () => {
       );
     });
 
+    it("treats a missing END after a complete footer as soft", () => {
+      const missing = checkChunk(
+        parse(WORKED_EXAMPLE.replace(/\nEND\s*$/, "")),
+      ).filter((violation) => violation.rule === "missing-end");
+      expect(missing).toMatchObject([{ severity: "soft" }]);
+    });
+
     it("turns parse errors and unparsed bars into violations", () => {
       expect(rules(chunk("B1 R: nonsense | L: C3@0:48"))).toContain(
         "parse-error",

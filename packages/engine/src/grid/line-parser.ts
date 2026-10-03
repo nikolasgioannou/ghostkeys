@@ -335,9 +335,12 @@ function parsePlan(text: string) {
       once(name);
       if (name === "key") key = parseKey(value);
       else if (name === "cad") {
-        cadence =
-          CADENCES.find((c) => c === value) ??
-          fail(`unknown cadence: "${value}"`);
+        // Claude often writes `cad=end` for a phrase end without a cadence.
+        if (value === "end") phraseEnd = true;
+        else
+          cadence =
+            CADENCES.find((c) => c === value) ??
+            fail(`unknown cadence: "${value}"`);
       } else if (name === "dyn") dynamic = parseDynamic(value);
       else if (name === "tex") {
         if (!/^[a-z][a-z0-9-]*$/.test(value))
@@ -361,7 +364,7 @@ function parsePlan(text: string) {
 }
 
 const NOTE_PATTERN =
-  /^([A-G][#b]?[0-8](?:\+[A-G][#b]?[0-8])*)@(\d+):(\d+)([~!]{0,2})$/;
+  /^([A-G](?:##|bb|[#b])?[0-8](?:\+[A-G](?:##|bb|[#b])?[0-8])*)@(\d+):(\d+)([~!]{0,2})$/;
 
 function parseNotes(text: string): Note[] {
   if (text === "-") return [];
@@ -413,8 +416,9 @@ function parseTempo(text: string): TempoMark[] {
 }
 
 function parseBarBody(text: string): BarBody {
-  const sections = text.split(" | ");
-  const [right, left, ...extra] = sections;
+  const [right, left, ...rest] = text.split(" | ");
+  // Claude sometimes runs `t:` on from `ped:` without the separator.
+  const extra = rest.flatMap((section) => section.split(/ (?=(?:ped|t): )/));
   if (!right?.startsWith("R: ")) fail('a bar starts with "R: "');
   if (!left?.startsWith("L: ")) fail('the second section is "L: "');
   let pedal: PedalEvent[] = [];

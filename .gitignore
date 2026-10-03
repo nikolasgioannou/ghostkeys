@@ -5,6 +5,3 @@ node_modules/
 !.env.example
 
 .DS_Store
-
-# Bake-off run files (large; summarised in docs/research/07-bakeoff.md).
-scripts/bakeoff/runs/

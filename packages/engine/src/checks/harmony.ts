@@ -49,14 +49,19 @@ interface Degree {
  * The root of a degree in a key: the key's own scale (major, or natural
  * minor), except that the seventh degree in minor is the raised leading tone
  * when written lowercase (`viio7`) and the subtonic when uppercase (`VII`).
- * An accidental moves it a semitone.
+ * A degree with an accidental counts from the major scale in either mode, as
+ * musicians write borrowed chords: `bVI` in F minor is D♭, `bII` the
+ * Neapolitan root.
  */
 function rootOf(tonic: number, mode: Key["mode"], d: Degree): number {
+  if (d.accidental !== "") {
+    const shift = d.accidental === "#" ? 1 : -1;
+    return mod12(tonic + (MAJOR_SCALE[d.degree - 1] ?? 0) + shift);
+  }
   const scale = mode === "major" ? MAJOR_SCALE : MINOR_SCALE;
   let step = scale[d.degree - 1] ?? 0;
   if (mode === "minor" && d.degree === 7 && d.minor) step = 11;
-  const shift = d.accidental === "#" ? 1 : d.accidental === "b" ? -1 : 0;
-  return mod12(tonic + step + shift);
+  return mod12(tonic + step);
 }
 
 /** The pitch classes of a planned chord in a key. */

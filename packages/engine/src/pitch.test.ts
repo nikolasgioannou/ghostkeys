@@ -32,11 +32,18 @@ describe("pitchToMidi", () => {
     expect(pitchToMidi("B#3")).toBe(60);
   });
 
+  it("reads double sharps and flats", () => {
+    expect(pitchToMidi("Bbb2")).toBe(45);
+    expect(pitchToMidi("C##4")).toBe(62);
+    expect(pitchToMidi("Cbb4")).toBe(58);
+  });
+
   it.each([
     "c4",
     "H4",
-    "C##4",
-    "Cbb4",
+    "C###4",
+    "Cbbb4",
+    "C#b4",
     "C♯4",
     "C9",
     "C-1",
