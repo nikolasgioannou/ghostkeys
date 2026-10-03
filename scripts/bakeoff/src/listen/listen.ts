@@ -46,7 +46,7 @@ const runs = await Promise.all(
 /** One group per session setup (session number and chunk length), its variants shuffled under neutral labels. */
 const byKey = new Map<string, RunFile[]>();
 for (const run of runs) {
-  const key = `${String(run.barsPerChunk)}-${String(run.session)}${run.mock ? "-mock" : ""}`;
+  const key = `${String(run.barsPerChunk)}-${run.effort}-${String(run.session)}${run.mock ? "-mock" : ""}`;
   byKey.set(key, [...(byKey.get(key) ?? []), run]);
 }
 const groups: Group[] = [];
@@ -58,7 +58,7 @@ for (const [, group] of [...byKey].sort(([a], [b]) => a.localeCompare(b))) {
     .sort((a, b) => a.order - b.order)
     .map(({ run }) => run);
   const section = document.createElement("section");
-  const title = `Session ${String(first.session)}, ${String(first.barsPerChunk)}-bar chunks${first.mock ? " (mock)" : ""}`;
+  const title = `Session ${String(first.session)}, ${String(first.barsPerChunk)}-bar chunks, effort ${first.effort}${first.mock ? " (mock)" : ""}`;
   section.append(
     Object.assign(document.createElement("h2"), { textContent: title }),
   );

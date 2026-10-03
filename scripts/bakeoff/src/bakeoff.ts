@@ -96,7 +96,7 @@ async function runAll(
           sessionId: `bakeoff-${variant}-${String(session)}-${String(Date.now())}`,
         });
     const result = RunFileSchema.parse(await run(session, model));
-    const name = `runs/${values.mock ? "mock-" : ""}${variant}-${String(bars)}bars-s${String(session)}.json`;
+    const name = `runs/${values.mock ? "mock-" : ""}${variant}-${String(bars)}bars-${effort}-s${String(session)}.json`;
     await Bun.write(name, JSON.stringify(result, null, 2));
     console.log(`  → ${name}`);
   }
