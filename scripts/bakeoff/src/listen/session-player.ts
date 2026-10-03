@@ -18,8 +18,10 @@ export interface PianoLike {
 }
 
 export interface ScheduledSession {
-  durationSec: number;
-  notes: number;
+  /** Where playback started, in seconds into the session. */
+  fromSec: number;
+  /** The AudioContext time at which `fromSec` sounds. */
+  startedAt: number;
   stop(): void;
 }
 
@@ -27,7 +29,7 @@ export interface ScheduledSession {
 const LOOKAHEAD_SEC = 0.5;
 const TICK_MS = 50;
 
-type Event =
+export type TimelineEvent =
   | {
       kind: "note";
       time: number;
@@ -37,22 +39,22 @@ type Event =
     }
   | { kind: "pedal"; time: number; down: boolean };
 
+/** A session laid out in time: every note and pedal event, in seconds from its start. */
+export interface Timeline {
+  durationSec: number;
+  notes: number;
+  events: TimelineEvent[];
+}
+
 /**
- * Plays a whole session (its chunks back to back, holding patterns skipped)
- * on a piano. Every bar that parses plays, with or without violations; a bar
+ * Lays out a whole session (its chunks back to back, holding patterns
+ * skipped). Every bar that parses plays, with or without violations; a bar
  * that doesn't parse is a rest of its length. Notes are humanized the way the
- * app will humanize them. Events are handed to the piano only a moment ahead
- * (a lookahead loop), so stopping really stops: nothing is left queued inside
- * the piano library.
+ * app will humanize them.
  */
-export function scheduleSession(
-  run: RunFile,
-  piano: PianoLike,
-  context: AudioContext,
-): ScheduledSession {
-  const begin = context.currentTime + 0.3;
-  let at = begin;
-  const events: Event[] = [];
+export function buildTimeline(run: RunFile): Timeline {
+  let at = 0;
+  const events: TimelineEvent[] = [];
 
   for (const chunk of run.chunks) {
     if (chunk.outcome !== "complete") continue;
@@ -92,11 +94,41 @@ export function scheduleSession(
   }
   events.push({ kind: "pedal", time: at, down: false });
   events.sort((a, b) => a.time - b.time);
+  return {
+    durationSec: at,
+    notes: events.filter((event) => event.kind === "note").length,
+    events,
+  };
+}
 
-  let next = 0;
+/**
+ * Plays a timeline on a piano from `fromSec` on. Notes that start earlier are
+ * skipped and the pedal starts where it was at that moment. Events are handed
+ * to the piano only a moment ahead (a lookahead loop), so stopping really
+ * stops: nothing is left queued inside the piano library.
+ */
+export function scheduleSession(
+  timeline: Timeline,
+  piano: PianoLike,
+  context: AudioContext,
+  fromSec = 0,
+): ScheduledSession {
+  const startedAt = context.currentTime + 0.3;
+  const { events } = timeline;
+  let next = events.findIndex((event) => event.time >= fromSec);
+  if (next === -1) next = events.length;
+  const pedalBefore = events
+    .slice(0, next)
+    .findLast((event) => event.kind === "pedal");
+  piano.pedal(pedalBefore?.kind === "pedal" && pedalBefore.down);
+  const toContext = (time: number) => startedAt + time - fromSec;
+
   const tick = () => {
     const horizon = context.currentTime + LOOKAHEAD_SEC;
-    while (next < events.length && (events[next]?.time ?? Infinity) < horizon) {
+    while (
+      next < events.length &&
+      toContext(events[next]?.time ?? Infinity) < horizon
+    ) {
       const event = events[next];
       next += 1;
       if (!event) continue;
@@ -104,12 +136,15 @@ export function scheduleSession(
         piano.start({
           note: event.note,
           velocity: event.velocity,
-          time: event.time,
+          time: toContext(event.time),
           duration: event.duration,
         });
       } else {
         // The pedal applies immediately, so wait until its moment.
-        const delay = Math.max(0, (event.time - context.currentTime) * 1000);
+        const delay = Math.max(
+          0,
+          (toContext(event.time) - context.currentTime) * 1000,
+        );
         pedalTimers.push(
           setTimeout(() => {
             piano.pedal(event.down);
@@ -124,8 +159,8 @@ export function scheduleSession(
   tick();
 
   return {
-    durationSec: at - begin,
-    notes: events.filter((event) => event.kind === "note").length,
+    fromSec,
+    startedAt,
     stop() {
       clearInterval(loop);
       for (const timer of pedalTimers) clearTimeout(timer);

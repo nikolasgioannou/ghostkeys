@@ -2,9 +2,11 @@ import { type RunFile, RunFileSchema, VARIANT_NAMES } from "../run-file.ts";
 import { runMetrics } from "./metrics.ts";
 import { loadPiano, PIANO_NAMES, type PianoChoice } from "./pianos.ts";
 import {
+  buildTimeline,
   type PianoLike,
   type ScheduledSession,
   scheduleSession,
+  type Timeline,
 } from "./session-player.ts";
 
 function element(selector: string): HTMLElement {
@@ -24,7 +26,44 @@ for (const [choice, name] of Object.entries(PIANO_NAMES))
 
 let context: AudioContext | null = null;
 const pianos = new Map<PianoChoice, PianoLike>();
-let playing: ScheduledSession | null = null;
+/** The take playing now, and its scrub bar to keep moving. */
+let playing: { session: ScheduledSession; take: TakePlayer } | null = null;
+
+interface TakePlayer {
+  label: string;
+  timeline: Timeline;
+  seek: HTMLInputElement;
+  clock: HTMLSpanElement;
+}
+
+const clockText = (sec: number) =>
+  `${String(Math.floor(sec / 60))}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
+
+function showPosition(take: TakePlayer, sec: number): void {
+  take.seek.value = String(sec);
+  take.clock.textContent = `${clockText(sec)} / ${clockText(take.timeline.durationSec)}`;
+}
+
+function stopPlaying(): void {
+  playing?.session.stop();
+  playing = null;
+}
+
+setInterval(() => {
+  if (!playing || !context) return;
+  const { session, take } = playing;
+  const sec = Math.max(
+    session.fromSec,
+    session.fromSec + context.currentTime - session.startedAt,
+  );
+  if (sec >= take.timeline.durationSec) {
+    stopPlaying();
+    showPosition(take, 0);
+    status.textContent = `${take.label} finished.`;
+    return;
+  }
+  showPosition(take, sec);
+}, 250);
 
 interface Take {
   label: string;
@@ -73,19 +112,38 @@ for (const [, group] of [...byKey].sort(([a], [b]) => a.localeCompare(b))) {
     const stop = Object.assign(document.createElement("button"), {
       textContent: "Stop",
     });
+    const timeline = buildTimeline(run);
+    const seek = Object.assign(document.createElement("input"), {
+      type: "range",
+      min: "0",
+      max: String(timeline.durationSec),
+      step: "1",
+      value: "0",
+      className: "seek",
+    });
+    const clock = Object.assign(document.createElement("span"), {
+      className: "muted clock",
+    });
+    const player: TakePlayer = { label, timeline, seek, clock };
+    showPosition(player, 0);
     const rank = document.createElement("select");
     rank.add(new Option("rank…", ""));
     for (let place = 1; place <= shuffled.length; place++)
       rank.add(new Option(String(place), String(place)));
     play.addEventListener("click", () => {
-      void start(run, label);
+      void start(player, Number(seek.value));
     });
     stop.addEventListener("click", () => {
-      playing?.stop();
-      playing = null;
+      stopPlaying();
       status.textContent = "Stopped.";
     });
-    row.append(play, stop, rank);
+    seek.addEventListener("input", () => {
+      showPosition(player, Number(seek.value));
+    });
+    seek.addEventListener("change", () => {
+      if (playing?.take === player) void start(player, Number(seek.value));
+    });
+    row.append(play, stop, seek, clock, rank);
     section.append(row);
     return { label, run, rank };
   });
@@ -97,8 +155,8 @@ status.textContent =
     ? "No run files yet. Run `bun run bakeoff --mock` first."
     : "Pick a piano, play the takes, rank them.";
 
-async function start(run: RunFile, label: string): Promise<void> {
-  playing?.stop();
+async function start(take: TakePlayer, fromSec: number): Promise<void> {
+  stopPlaying();
   context ??= new AudioContext();
   await context.resume();
   const choice = pianoSelect.value as PianoChoice;
@@ -108,8 +166,11 @@ async function start(run: RunFile, label: string): Promise<void> {
     piano = await loadPiano(choice, context);
     pianos.set(choice, piano);
   }
-  playing = scheduleSession(run, piano, context);
-  status.textContent = `Playing ${label} on the ${choice === "steinway" ? "Steinway" : "Salamander"}: ${playing.durationSec.toFixed(0)} s.`;
+  playing = {
+    session: scheduleSession(take.timeline, piano, context, fromSec),
+    take,
+  };
+  status.textContent = `Playing ${take.label} on the ${choice === "steinway" ? "Steinway" : "Salamander"}.`;
 }
 
 const format = (value: number | null, digits = 2) =>
