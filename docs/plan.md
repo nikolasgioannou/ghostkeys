@@ -29,8 +29,8 @@ This is the order in which Ghostkeys gets built. The tickets themselves live in 
 | M3 Hear it         | 35–40   | The web app with play/pause; a stored chunk plays on the sampled piano                                                                             |
 | M4 Endless         | 41–44   | Live composing streamed from the server, two chunks buffered, the holding-pattern safety net, recovery from failures: it plays forever             |
 | M5 Memory          | 45–49   | Chunks and state saved in SQLite, resume, the model-call log, the reset script, an hour of listening and tuning                                    |
-| M6 The ghost talks | 50–55   | The conductor, typed messages with fading replies, steering heard at the next chunk, tuned together                                                |
-| M7 Player-piano    | 56–60   | The look designed together, the paper roll, themed controls, grid-format tweaks, the final polish                                                  |
+| M6 The ghost talks | 50–56   | The conductor, typed messages with fading replies, steering heard at the next phrase, tuned together                                               |
+| M7 Player-piano    | 57–61   | The look designed together, the paper roll, themed controls, grid-format tweaks, the final polish                                                  |
 
 **60 tickets, 9 collaborative.**
 
@@ -129,16 +129,17 @@ The database becomes the source of truth: every chunk is saved with a snapshot o
 
 ### M6 — The ghost talks
 
-Steering. A fast conductor call turns what the listener types into a one-line reply and a change of direction; the composer follows it, immediately or gradually, with Claude choosing every step; and buffered music after the playing chunk is dropped so the change is heard at the next chunk boundary. The server never starts a composition on its own: the next request from the open tab composes the steered chunk. Tuned together by feel.
+Steering. A fast conductor call turns what the listener types into a one-line reply and a change of direction; the composer follows it, immediately or gradually, with Claude choosing every step; and buffered music is dropped and a short turn is spliced in at the next phrase about 25 s ahead, so the change is heard in about half a minute. The server never starts a composition on its own: the next request from the open tab composes the steered chunk. Tuned together by feel.
 
-| #   | Ticket   | Title                                              | Blocked by                             |
-| --- | -------- | -------------------------------------------------- | -------------------------------------- |
-| 50  | `fc0f00` | Write the conductor                                | `20a6d2`, `ea0677`                     |
-| 51  | `0bd789` | Send a message to the ghost                        | `fc0f00`, `ea0677`, `fd4fe6`           |
-| 52  | `537f73` | Add the chat input with fading replies             | `0bd789`, `e4d8ad`                     |
-| 53  | `be396c` | Steer the composer toward the direction            | `0bd789`                               |
-| 54  | `3cdb60` | Hear steering at the next chunk                    | `be396c`, `537f73`, `43017f`, `e98607` |
-| 55  | `fb10c7` | Steer the ghost together and tune the conductor 🤝 | `3cdb60`, `2d2c70`                     |
+| #   | Ticket   | Title                                              | Blocked by                                       |
+| --- | -------- | -------------------------------------------------- | ------------------------------------------------ |
+| 50  | `fc0f00` | Write the conductor                                | `20a6d2`, `ea0677`                               |
+| 51  | `0bd789` | Send a message to the ghost                        | `fc0f00`, `ea0677`, `fd4fe6`                     |
+| 52  | `537f73` | Add the chat input with fading replies             | `0bd789`, `e4d8ad`                               |
+| 53  | `be396c` | Steer the composer toward the direction            | `0bd789`                                         |
+| 54  | `632bdc` | Splice the piece at a phrase                       | `20a6d2`                                         |
+| 55  | `3cdb60` | Hear steering at the next phrase                   | `be396c`, `537f73`, `43017f`, `e98607`, `632bdc` |
+| 56  | `fb10c7` | Steer the ghost together and tune the conductor 🤝 | `3cdb60`, `2d2c70`                               |
 
 ### M7 — Player-piano
 
@@ -146,8 +147,8 @@ The look, designed together: the candlelit player-piano roll as the visualizer, 
 
 | #   | Ticket   | Title                                    | Blocked by                   |
 | --- | -------- | ---------------------------------------- | ---------------------------- |
-| 56  | `bbf93d` | Design the player-piano look 🤝          | `537f73`                     |
-| 57  | `e8f93c` | Draw the paper roll                      | `bbf93d`, `3cdb60`, `43017f` |
-| 58  | `5e386a` | Style the controls and chat in the theme | `bbf93d`                     |
-| 59  | `85f077` | Tweak the grid format 🤝                 | `fb10c7`                     |
-| 60  | `269f36` | Polish the experience 🤝                 | `e8f93c`, `5e386a`, `85f077` |
+| 57  | `bbf93d` | Design the player-piano look 🤝          | `537f73`                     |
+| 58  | `e8f93c` | Draw the paper roll                      | `bbf93d`, `3cdb60`, `43017f` |
+| 59  | `5e386a` | Style the controls and chat in the theme | `bbf93d`                     |
+| 60  | `85f077` | Tweak the grid format 🤝                 | `fb10c7`                     |
+| 61  | `269f36` | Polish the experience 🤝                 | `e8f93c`, `5e386a`, `85f077` |
