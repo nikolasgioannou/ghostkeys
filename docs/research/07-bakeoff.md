@@ -1,6 +1,6 @@
 # Bake-off results
 
-_Results brief, 2026-10-03. The blind listening (ticket 33) is still to come; this covers the measured side._
+_Results brief, 2026-10-03._
 
 ## What ran
 
@@ -67,7 +67,23 @@ All four, plus the `bVI` convention, are easy to fix at the format end, either b
 
 Every session followed the chunk-3 note ("Slowly grow darker and slower"). In all 8 runs, chunks 3–4 moved to a minor key (or towards one) and the tempo dropped by 10–20 bpm, for example from 72 to 66 to 58 in C s1. The roadmaps turned to darker mood words (`Fm:sombre`, `Bbm:brooding`). Whether it _sounds_ darker is for the listening session.
 
-## Still to decide (ticket 33)
+## The picks
 
-- The variant and the piano, by ear on the blind page.
-- What to do about the four format issues and the `bVI` convention above, if a grid variant wins.
+The user listened blind and ranked the takes within each session:
+
+| Session          | 1st | 2nd | 3rd |
+| ---------------- | --- | --- | --- |
+| 1 (16 bars, low) | C   | B   | A   |
+| 2 (16 bars, low) | C   | B   | A   |
+
+- **Variant:** C, first in both sessions. A came last both times despite having the cleanest metrics, so its zero violations didn't translate into better music.
+- **Piano:** the Salamander Grand. It was compared level-matched, after the listening page's pedal fix.
+
+**Decisions** (design.md → Open questions):
+
+- **Chunks:** opening 8 bars, steady 16 bars, post-steer turn 8 bars.
+- **Settings:** `low` effort; resolution, revise policy, examples and thresholds unchanged.
+- **The format:** it accepts Claude's habits listed above, and `bVI`-style accidentals count from the major scale.
+- **Steering:** it splices a turn in at the next phrase about 25 s ahead, because the chunk timings above make "the next chunk" up to about 90 s away. A 16-bar chunk took 17–37 s to compose and an 8-bar one 18–24 s, mostly because of the revise turn.
+
+Nothing from the bake-off workspace is kept beyond this doc and the engine test fixture.

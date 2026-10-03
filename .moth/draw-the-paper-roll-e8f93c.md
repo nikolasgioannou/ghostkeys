@@ -21,7 +21,7 @@ The visualizer: a player-piano roll whose perforations are the notes being playe
 - The queue reports the playing position down to the bar and offset (add it, with tests). The roll reads it each frame.
 - Canvas 2D, crisp on HiDPI screens, resizing live.
 - Notes appear as perforations (pitch across, time along the roll), scrolling in sync with the AudioContext clock through that position. Pause freezes it; resume continues.
-- It follows what actually plays: tempo stretch, the looping holding pattern, and chunks dropped after a steer.
+- It follows what actually plays: tempo stretch, the looping holding pattern, and music dropped by a steer's splice.
 - Respects reduced motion (a calmer mode, agreed in the look).
 - Steady frame rate over a long session, with no growth in memory or drawing work as the piece goes on.
 

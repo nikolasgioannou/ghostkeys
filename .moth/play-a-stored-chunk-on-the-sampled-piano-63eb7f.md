@@ -21,9 +21,9 @@ The first sound in the app: Play performs the committed fixture chunk on the cho
 
 **Scope**
 - Decide where the samples come from (CDN or vendored), check the licence, and add attribution if required (README and design.md). If samples are downloaded or vendored, `scripts/setup.sh` fetches them (check, then act) and `.gitignore` covers them. Start loading samples on page load, before Play.
-- A Web Audio lookahead loop ("A Tale of Two Clocks", docs/research/01) drains the queue into the piano, including sustain pedal.
+- A Web Audio lookahead loop ("A Tale of Two Clocks", docs/research/01) drains the queue into the piano. The bake-off found that neither library handles a sustain pedal scheduled ahead of time (design.md → Bake-off → Listening). Resolve the pedal into note lengths before scheduling, and hold each Salamander key until shortly before its release, so that `stopAll` can silence it.
 - Play parses the fixture chunk with the engine, humanizes it and queues it. Pause and resume continue in place. At the end, playback stops (live composing comes next).
-- On pause, a discontinuity or the end, send pedal-up so nothing rings on.
+- On pause, a discontinuity or the end, silence what's sounding so nothing rings on.
 - Check it with the tab in the background for a few minutes: browsers throttle timers in hidden tabs, and this is music people play while working.
 
 **Docs:** design.md → Playback (piano library, sample source and licence, the scheduling loop).
